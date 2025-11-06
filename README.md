@@ -1,5 +1,7 @@
 # Steve
 
+[![Demo Video](docs/demo.mp4.mov)](docs/demo.mp4.mov)
+
 We built Cursor for Minecraft. Instead of AI that helps you write code, you get AI agents that actually play the game with you.
 
 ## What It Does
