@@ -50,40 +50,29 @@ public class StructureTemplateLoader {
     }
     
     /**
-     * Load a structure from an NBT file (either custom or Minecraft's native format)
+     * Load a structure from an NBT file from resources
      */
-    public static LoadedTemplate loadFromNBT(ServerLevel level, String structureName) {        File structuresDir = new File(System.getProperty("user.dir"), "structures");
-        SteveMod.LOGGER.info("Structures directory: {}", structuresDir.getAbsolutePath());
-        
-        File exactMatch = new File(structuresDir, structureName + ".nbt");
-        if (exactMatch.exists()) {
-            SteveMod.LOGGER.info("Found structure (exact match): {}", exactMatch.getName());
-            return loadFromFile(exactMatch, structureName);
-        }
-        
-        String withSpaces = structureName.replaceAll("(\\w)(\\p{Upper})", "$1 $2").toLowerCase();
-        File spacedMatch = new File(structuresDir, withSpaces + ".nbt");
-        if (spacedMatch.exists()) {
-            SteveMod.LOGGER.info("Found structure (spaced match): {}", spacedMatch.getName());
-            return loadFromFile(spacedMatch, structureName);
-        }
-        
-        if (structuresDir.exists() && structuresDir.isDirectory()) {
-            File[] files = structuresDir.listFiles((dir, name) -> {
-                if (!name.endsWith(".nbt")) return false;
-                
-                String nameWithoutExt = name.substring(0, name.length() - 4);
-                
-                // Normalize both strings: lowercase, remove spaces and underscores
-                String normalizedFile = nameWithoutExt.toLowerCase().replace(" ", "").replace("_", "");
-                String normalizedSearch = structureName.toLowerCase().replace(" ", "").replace("_", "");
-                
-                return normalizedFile.equals(normalizedSearch);
-            });
-            
-            if (files != null && files.length > 0) {
-                SteveMod.LOGGER.info("Found structure (fuzzy match): {}", files[0].getName());
-                return loadFromFile(files[0], structureName);
+    public static LoadedTemplate loadFromNBT(ServerLevel level, String structureName) {
+        // Try loading from classpath resources first
+        String[] possibleNames = {
+            structureName + ".nbt",
+            structureName.toLowerCase().replace(" ", "_") + ".nbt",
+            structureName.replaceAll("(\\w)(\\p{Upper})", "$1_$2").toLowerCase() + ".nbt"
+        };
+
+        for (String fileName : possibleNames) {
+            String resourcePath = "structures/" + fileName;
+            InputStream resourceStream = StructureTemplateLoader.class.getClassLoader().getResourceAsStream(resourcePath);
+
+            if (resourceStream != null) {
+                SteveMod.LOGGER.info("Found structure in resources: {}", resourcePath);
+                try {
+                    CompoundTag nbt = NbtIo.readCompressed(resourceStream);
+                    resourceStream.close();
+                    return parseNBTStructure(nbt, structureName);
+                } catch (IOException e) {
+                    SteveMod.LOGGER.error("Failed to load structure from resources: {}", resourcePath, e);
+                }
             }
         }
         
