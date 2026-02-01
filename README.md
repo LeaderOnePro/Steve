@@ -1,4 +1,4 @@
-# Steve AI - Autonomous AI Agent for Minecraft (v1.0.2)
+# Steve AI - Autonomous AI Agent for Minecraft (v1.0.3)
 
 **Author:** LeaderOnePro  
 **Forked from:** [YuvDwi/Steve](https://github.com/YuvDwi/Steve)
