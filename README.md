@@ -186,7 +186,7 @@ We welcome contributions! Here's how to get started:
 
 ### Reporting Bugs
 
-1. Check [existing issues](https://github.com/YuvDwi/Steve/issues) first
+1. Check [existing issues](https://github.com/LeaderOnePro/Steve/issues) first
 2. Include:
    - Minecraft/Forge/Steve AI versions
    - Steps to reproduce
@@ -197,7 +197,7 @@ We welcome contributions! Here's how to get started:
 
 1. **Fork and clone**
    ```bash
-   git clone https://github.com/YourUsername/Steve.git
+   git clone https://github.com/LeaderOnePro/Steve.git
    cd Steve
    ```
 
