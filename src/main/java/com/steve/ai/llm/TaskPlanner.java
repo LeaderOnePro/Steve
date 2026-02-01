@@ -35,22 +35,13 @@ public class TaskPlanner {
         this.groqClient = new GroqClient();
         this.deepSeekClient = new DeepSeekClient();
 
-        // DeepSeek async client can be initialized without Caffeine/Resilience4j
-        AsyncLLMClient tempAsyncDeepSeek = null;
-        try {
-            tempAsyncDeepSeek = new AsyncDeepSeekClient();
-            SteveMod.LOGGER.info("AsyncDeepSeekClient initialized successfully");
-        } catch (Exception e) {
-            SteveMod.LOGGER.warn("Failed to initialize AsyncDeepSeekClient: {}", e.getMessage());
-        }
-        this.asyncDeepSeekClient = tempAsyncDeepSeek;
-
         // Initialize async infrastructure (may fail if Caffeine/Resilience4j not available in runtime)
         LLMCache tempCache = null;
         LLMFallbackHandler tempFallback = null;
         AsyncLLMClient tempAsyncOpenAI = null;
         AsyncLLMClient tempAsyncGroq = null;
         AsyncLLMClient tempAsyncGemini = null;
+        AsyncLLMClient tempAsyncDeepSeek = null;
 
         try {
             tempCache = new LLMCache();
@@ -66,11 +57,13 @@ public class TaskPlanner {
             AsyncLLMClient baseOpenAI = new AsyncOpenAIClient(apiKey, model, maxTokens, temperature);
             AsyncLLMClient baseGroq = new AsyncGroqClient(apiKey, "llama-3.1-8b-instant", 500, temperature);
             AsyncLLMClient baseGemini = new AsyncGeminiClient(apiKey, "gemini-1.5-flash", maxTokens, temperature);
+            AsyncLLMClient baseDeepSeek = new AsyncDeepSeekClient();
 
-            // Wrap with resilience patterns
+            // Wrap with resilience patterns (caching, retries, circuit breaker)
             tempAsyncOpenAI = new ResilientLLMClient(baseOpenAI, tempCache, tempFallback);
             tempAsyncGroq = new ResilientLLMClient(baseGroq, tempCache, tempFallback);
             tempAsyncGemini = new ResilientLLMClient(baseGemini, tempCache, tempFallback);
+            tempAsyncDeepSeek = new ResilientLLMClient(baseDeepSeek, tempCache, tempFallback);
 
             SteveMod.LOGGER.info("TaskPlanner initialized with async resilient clients");
         } catch (NoClassDefFoundError | Exception e) {
@@ -82,6 +75,7 @@ public class TaskPlanner {
         this.asyncOpenAIClient = tempAsyncOpenAI;
         this.asyncGroqClient = tempAsyncGroq;
         this.asyncGeminiClient = tempAsyncGemini;
+        this.asyncDeepSeekClient = tempAsyncDeepSeek;
     }
 
     public ResponseParser.ParsedResponse planTasks(SteveEntity steve, String command) {
@@ -177,6 +171,27 @@ public class TaskPlanner {
             // Select async client based on provider
             AsyncLLMClient client = getAsyncClient(provider);
 
+            // Null check - if all async clients failed to initialize, fall back to sync API
+            if (client == null) {
+                SteveMod.LOGGER.warn("[Async] No async clients available, falling back to sync API");
+                return CompletableFuture.supplyAsync(() -> {
+                    String response = getAIResponse(provider, systemPrompt, userPrompt);
+                    if (response == null || response.isEmpty()) {
+                        SteveMod.LOGGER.error("[Sync Fallback] Empty response from API");
+                        return null;
+                    }
+                    ResponseParser.ParsedResponse parsed = ResponseParser.parseAIResponse(response);
+                    if (parsed != null) {
+                        SteveMod.LOGGER.info("[Sync Fallback] Plan received: {} ({} tasks)",
+                            parsed.getPlan(), parsed.getTasks().size());
+                    }
+                    return parsed;
+                }).exceptionally(throwable -> {
+                    SteveMod.LOGGER.error("[Sync Fallback] Error planning tasks: {}", throwable.getMessage());
+                    return null;
+                });
+            }
+
             // Execute async request
             return client.sendAsync(userPrompt, params)
                 .thenApply(response -> {
@@ -214,21 +229,33 @@ public class TaskPlanner {
 
     /**
      * Returns the appropriate async client based on provider config.
+     * Returns null if the client is not available.
      *
      * @param provider Provider name ("openai", "groq", "gemini", "deepseek")
-     * @return Resilient async client
+     * @return Resilient async client, or null if not available
      */
     private AsyncLLMClient getAsyncClient(String provider) {
-        return switch (provider) {
+        AsyncLLMClient client = switch (provider) {
             case "openai" -> asyncOpenAIClient;
             case "gemini" -> asyncGeminiClient;
             case "groq" -> asyncGroqClient;
             case "deepseek" -> asyncDeepSeekClient;
             default -> {
-                SteveMod.LOGGER.warn("[Async] Unknown provider '{}', using Groq", provider);
+                SteveMod.LOGGER.warn("[Async] Unknown provider '{}', trying Groq as fallback", provider);
                 yield asyncGroqClient;
             }
         };
+        
+        // Null check - if preferred client is null, try fallback options
+        if (client == null) {
+            SteveMod.LOGGER.warn("[Async] Client for provider '{}' is null, trying fallbacks", provider);
+            // Try fallback order: groq -> openai -> gemini -> deepseek
+            if (asyncGroqClient != null) return asyncGroqClient;
+            if (asyncOpenAIClient != null) return asyncOpenAIClient;
+            if (asyncGeminiClient != null) return asyncGeminiClient;
+            if (asyncDeepSeekClient != null) return asyncDeepSeekClient;
+        }
+        return client;
     }
 
     /**
