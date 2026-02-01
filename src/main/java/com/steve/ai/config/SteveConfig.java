@@ -7,6 +7,8 @@ public class SteveConfig {
     public static final ForgeConfigSpec.ConfigValue<String> AI_PROVIDER;
     public static final ForgeConfigSpec.ConfigValue<String> OPENAI_API_KEY;
     public static final ForgeConfigSpec.ConfigValue<String> OPENAI_MODEL;
+    public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_API_KEY;
+    public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_MODEL;
     public static final ForgeConfigSpec.IntValue MAX_TOKENS;
     public static final ForgeConfigSpec.DoubleValue TEMPERATURE;
     public static final ForgeConfigSpec.IntValue ACTION_TICK_DELAY;
@@ -19,8 +21,16 @@ public class SteveConfig {
         builder.comment("AI API Configuration").push("ai");
         
         AI_PROVIDER = builder
-            .comment("AI provider to use: 'groq' (FASTEST, FREE), 'openai', or 'gemini'")
+            .comment("AI provider to use: 'groq' (FASTEST, FREE), 'openai', 'gemini', or 'deepseek'")
             .define("provider", "groq");
+        
+        MAX_TOKENS = builder
+            .comment("Maximum tokens per API request (applies to all LLM providers)")
+            .defineInRange("maxTokens", 8000, 100, 65536);
+        
+        TEMPERATURE = builder
+            .comment("Temperature for AI responses (0.0-2.0, lower is more deterministic)")
+            .defineInRange("temperature", 0.7, 0.0, 2.0);
         
         builder.pop();
 
@@ -34,13 +44,17 @@ public class SteveConfig {
             .comment("OpenAI model to use (gpt-4, gpt-4-turbo-preview, gpt-3.5-turbo)")
             .define("model", "gpt-4-turbo-preview");
         
-        MAX_TOKENS = builder
-            .comment("Maximum tokens per API request")
-            .defineInRange("maxTokens", 8000, 100, 65536);
+        builder.pop();
+
+        builder.comment("DeepSeek API Configuration").push("deepseek");
         
-        TEMPERATURE = builder
-            .comment("Temperature for AI responses (0.0-2.0, lower is more deterministic)")
-            .defineInRange("temperature", 0.7, 0.0, 2.0);
+        DEEPSEEK_API_KEY = builder
+            .comment("Your DeepSeek API key (get from: https://platform.deepseek.com/api_keys)")
+            .define("apiKey", "");
+        
+        DEEPSEEK_MODEL = builder
+            .comment("DeepSeek model to use (deepseek-chat, deepseek-reasoner)")
+            .define("model", "deepseek-chat");
         
         builder.pop();
 
@@ -63,4 +77,3 @@ public class SteveConfig {
         SPEC = builder.build();
     }
 }
-
