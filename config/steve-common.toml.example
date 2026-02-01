@@ -16,7 +16,7 @@
     apiKey = "ak_xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     
     # LongCat model to use (LongCat-Flash-Chat, LongCat-Flash-Thinking, LongCat-Flash-Thinking-2601)
-    model = "LongCat-Flash-Thinking-2601"
+    model = "LongCat-Flash-Chat"
 
 # DeepSeek API Configuration
 [deepseek]

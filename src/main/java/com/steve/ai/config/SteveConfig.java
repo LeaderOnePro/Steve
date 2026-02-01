@@ -62,7 +62,7 @@ public class SteveConfig {
         
         LONGCAT_MODEL = builder
             .comment("LongCat model to use (LongCat-Flash-Chat, LongCat-Flash-Thinking, LongCat-Flash-Thinking-2601)")
-            .define("model", "LongCat-Flash-Thinking-2601");
+            .define("model", "LongCat-Flash-Chat");
         
         builder.pop();
 
