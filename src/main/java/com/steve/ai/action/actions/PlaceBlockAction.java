@@ -74,11 +74,18 @@ public class PlaceBlockAction extends BaseAction {
     }
 
     private Block parseBlock(String blockName) {
+        if (blockName == null || blockName.isEmpty()) return Blocks.AIR;
+        
         blockName = blockName.toLowerCase().replace(" ", "_");
         if (!blockName.contains(":")) {
             blockName = "minecraft:" + blockName;
         }
-        ResourceLocation resourceLocation = new ResourceLocation(blockName);
+        
+        ResourceLocation resourceLocation = ResourceLocation.tryParse(blockName);
+        if (resourceLocation == null) {
+            com.steve.ai.SteveMod.LOGGER.error("Invalid ResourceLocation for block: {}", blockName);
+            return Blocks.AIR;
+        }
         return BuiltInRegistries.BLOCK.get(resourceLocation);
     }
 }

@@ -33,6 +33,8 @@ public class PromptBuilder {
             7. Keep reasoning under 15 words
             8. COLLABORATIVE BUILDING: Multiple Steves can work on same structure simultaneously
             9. MINING: Can mine any ore (iron, diamond, coal, etc)
+            10. CRITICAL: All block, item, and entity IDs MUST be in English snake_case (e.g. "oak_log", "diamond_ore").
+            11. NEVER use Chinese or any other localized language for IDs.
             
             EXAMPLES (copy these formats exactly):
             
