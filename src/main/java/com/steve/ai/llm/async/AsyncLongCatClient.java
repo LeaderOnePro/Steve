@@ -70,7 +70,7 @@ public class AsyncLongCatClient implements AsyncLLMClient {
                 if (response.statusCode() != 200) {
                     LLMException.ErrorType errorType = determineErrorType(response.statusCode());
                     LOGGER.error("[longcat] API error: status={}, body={}", response.statusCode(), truncate(response.body(), 200));
-                    throw new LLMException("LongCat API error: HTTP " + response.statusCode(), errorType, PROVIDER_ID, response.statusCode() >= 500);
+                    throw new LLMException("LongCat API error: HTTP " + response.statusCode(), errorType, PROVIDER_ID, errorType.isRetryable());
                 }
 
                 return parseResponse(response.body(), latencyMs);

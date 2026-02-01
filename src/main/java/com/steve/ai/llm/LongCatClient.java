@@ -58,9 +58,14 @@ public class LongCatClient {
 
                 if (response.statusCode() == 429 || response.statusCode() >= 500) {
                     if (attempt < MAX_RETRIES - 1) {
-                        int delayMs = INITIAL_RETRY_DELAY_MS * (int) Math.pow(2, attempt);
+                        long delayMs = (long) INITIAL_RETRY_DELAY_MS * (int) Math.pow(2, attempt);
                         SteveMod.LOGGER.warn("LongCat API failed ({}), retrying in {}ms", response.statusCode(), delayMs);
-                        Thread.sleep(delayMs);
+                        try {
+                            Thread.sleep(delayMs);
+                        } catch (InterruptedException ie) {
+                            Thread.currentThread().interrupt();
+                            return null;
+                        }
                         continue;
                     }
                 }
@@ -69,9 +74,16 @@ public class LongCatClient {
                 return null;
             } catch (Exception e) {
                 if (attempt < MAX_RETRIES - 1) {
-                    try { Thread.sleep(INITIAL_RETRY_DELAY_MS * (int) Math.pow(2, attempt)); } catch (Exception ignored) {}
+                    long delayMs = (long) INITIAL_RETRY_DELAY_MS * (int) Math.pow(2, attempt);
+                    SteveMod.LOGGER.warn("Error communicating with LongCat API, retrying in {}ms", delayMs, e);
+                    try {
+                        Thread.sleep(delayMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    }
                 } else {
-                    SteveMod.LOGGER.error("Error communicating with LongCat API", e);
+                    SteveMod.LOGGER.error("Error communicating with LongCat API after {} attempts", MAX_RETRIES, e);
                     return null;
                 }
             }
