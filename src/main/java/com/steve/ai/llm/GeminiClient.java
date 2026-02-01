@@ -16,16 +16,16 @@ import java.time.Duration;
  * Client for Google Gemini API
  * FREE tier: 15 RPM, 1500 RPD
  * Paid: ~10x cheaper than GPT-3.5
- * Using gemini-2.5-flash with high token limit for thinking mode
+ * Supports: gemini-3-pro-preview, gemini-3-flash-preview, gemini-flash-lite-latest
  */
 public class GeminiClient {
-    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    private static final String GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
     
     private final HttpClient client;
     private final String apiKey;
 
     public GeminiClient() {
-        this.apiKey = SteveConfig.OPENAI_API_KEY.get(); // We'll use the same config for now
+        this.apiKey = SteveConfig.GEMINI_API_KEY.get();
         this.client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(30))
             .build();
@@ -38,7 +38,8 @@ public class GeminiClient {
         }
 
         JsonObject requestBody = buildRequestBody(systemPrompt, userPrompt);
-        String urlWithKey = GEMINI_API_URL + "?key=" + apiKey;
+        String model = SteveConfig.GEMINI_MODEL.get();
+        String urlWithKey = GEMINI_API_BASE + model + ":generateContent?key=" + apiKey;
         
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(urlWithKey))

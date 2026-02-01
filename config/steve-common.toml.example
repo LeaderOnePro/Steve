@@ -1,7 +1,7 @@
 # AI Provider Configuration
 [ai]
     # AI provider to use: 'groq' (FASTEST, FREE), 'openai', 'gemini', or 'deepseek'
-    provider = "deepseek"
+    provider = "groq"
     
     # Maximum tokens per API request (applies to all LLM providers)
     maxTokens = 8000
@@ -13,19 +13,37 @@
 [openai]
     # Your OpenAI API key
     # Get your API key from: https://platform.openai.com/api-keys
-    apiKey = "your-openai-api-key-here"
+    apiKey = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     
-    # OpenAI model to use (gpt-3.5-turbo, gpt-4, gpt-4-turbo-preview)
-    model = "gpt-3.5-turbo"
+    # OpenAI model to use (gpt-5.2, gpt-5.2-codex, gpt-5-mini-2025-08-07, gpt-5-nano-2025-08-07)
+    model = "gpt-5-mini-2025-08-07"
 
 # DeepSeek API Configuration
 [deepseek]
     # Your DeepSeek API key
     # Get your API key from: https://platform.deepseek.com/api_keys
-    apiKey = "your-deepseek-api-key-here"
+    apiKey = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     
     # DeepSeek model to use (deepseek-chat, deepseek-reasoner)
     model = "deepseek-chat"
+
+# Groq API Configuration (FASTEST, FREE tier available)
+[groq]
+    # Your Groq API key
+    # Get your API key from: https://console.groq.com/keys
+    apiKey = "gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    
+    # Groq model to use (llama-3.1-8b-instant, llama-3.1-70b-versatile, mixtral-8x7b-32768)
+    model = "llama-3.1-8b-instant"
+
+# Google Gemini API Configuration
+[gemini]
+    # Your Gemini API key
+    # Get your API key from: https://aistudio.google.com/apikey
+    apiKey = "AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    
+    # Gemini model to use (gemini-3-pro-preview, gemini-3-flash-preview, gemini-flash-lite-latest)
+    model = "gemini-3-flash-preview"
 
 # Steve Behavior Configuration
 [behavior]
