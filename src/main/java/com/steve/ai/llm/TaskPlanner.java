@@ -70,7 +70,12 @@ public class TaskPlanner {
                 maxTokens, 
                 temperature
             );
-            AsyncLLMClient baseDeepSeek = new AsyncDeepSeekClient();
+            AsyncLLMClient baseDeepSeek = new AsyncDeepSeekClient(
+                SteveConfig.DEEPSEEK_API_KEY.get(),
+                SteveConfig.DEEPSEEK_MODEL.get(),
+                maxTokens,
+                temperature
+            );
 
             // Wrap with resilience patterns (caching, retries, circuit breaker)
             tempAsyncOpenAI = new ResilientLLMClient(baseOpenAI, tempCache, tempFallback);
@@ -171,6 +176,8 @@ public class TaskPlanner {
             // Build params map with provider-specific model
             String modelForProvider = switch (provider) {
                 case "deepseek" -> SteveConfig.DEEPSEEK_MODEL.get();
+                case "groq" -> SteveConfig.GROQ_MODEL.get();
+                case "gemini" -> SteveConfig.GEMINI_MODEL.get();
                 default -> SteveConfig.OPENAI_MODEL.get();
             };
             

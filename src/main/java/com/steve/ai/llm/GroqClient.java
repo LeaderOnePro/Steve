@@ -53,8 +53,8 @@ public class GroqClient {
         messages.add(userMessage);
 
         requestBody.add("messages", messages);
-        requestBody.addProperty("max_tokens", 500); // Keep it short for speed
-        requestBody.addProperty("temperature", 0.7);
+        requestBody.addProperty("max_tokens", SteveConfig.MAX_TOKENS.get());
+        requestBody.addProperty("temperature", SteveConfig.TEMPERATURE.get());
 
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(GROQ_API_URL))
