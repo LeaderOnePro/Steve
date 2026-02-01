@@ -3,8 +3,6 @@ package com.steve.ai.llm.async;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.steve.ai.SteveMod;
-import com.steve.ai.config.SteveConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,14 +58,16 @@ public class AsyncIFlowClient implements AsyncLLMClient {
             .uri(URI.create(IFLOW_API_URL))
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer " + apiKey)
+            .timeout(Duration.ofSeconds(60))
             .POST(HttpRequest.BodyPublishers.ofString(requestBody))
             .build();
 
+        LOGGER.debug("[iflow] Sending async request");
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
             .thenApply(response -> {
                 long latency = System.currentTimeMillis() - startTime;
                 if (response.statusCode() != 200) {
-                    LOGGER.error("iFlow API error: {} - {}", response.statusCode(), response.body());
+                    LOGGER.error("iFlow API error: {} - {}", response.statusCode(), truncate(response.body(), 200));
                     throw new LLMException("iFlow API returned status " + response.statusCode(), 
                         mapStatusCodeToErrorType(response.statusCode()), PROVIDER_ID, isRetryable(response.statusCode()));
                 }
@@ -77,9 +77,9 @@ public class AsyncIFlowClient implements AsyncLLMClient {
 
     private String buildRequestBody(String prompt, Map<String, Object> params) {
         JsonObject body = new JsonObject();
-        String activeModel = params.containsKey("model") ? (String) params.get("model") : this.model;
-        double activeTemp = params.containsKey("temperature") ? (Double) params.get("temperature") : this.temperature;
-        int activeMaxTokens = params.containsKey("maxTokens") ? (Integer) params.get("maxTokens") : this.maxTokens;
+        String activeModel = (String) params.getOrDefault("model", this.model);
+        double activeTemp = (Double) params.getOrDefault("temperature", this.temperature);
+        int activeMaxTokens = (Integer) params.getOrDefault("maxTokens", this.maxTokens);
 
         body.addProperty("model", activeModel);
         body.addProperty("temperature", activeTemp);
@@ -112,7 +112,7 @@ public class AsyncIFlowClient implements AsyncLLMClient {
             
             JsonObject usage = json.has("usage") ? json.getAsJsonObject("usage") : null;
             int tokens = usage != null ? usage.get("total_tokens").getAsInt() : 0;
-            String activeModel = params.containsKey("model") ? (String) params.get("model") : this.model;
+            String activeModel = (String) params.getOrDefault("model", this.model);
 
             return LLMResponse.builder()
                 .content(content)
@@ -122,7 +122,7 @@ public class AsyncIFlowClient implements AsyncLLMClient {
                 .latencyMs(latencyMs)
                 .fromCache(false)
                 .build();
-        } catch (Exception e) {
+        } catch (com.google.gson.JsonParseException | IllegalStateException | IndexOutOfBoundsException e) {
             LOGGER.error("Error parsing iFlow response", e);
             throw new LLMException("Failed to parse iFlow API response", LLMException.ErrorType.INVALID_RESPONSE, PROVIDER_ID, false, e);
         }
@@ -149,5 +149,12 @@ public class AsyncIFlowClient implements AsyncLLMClient {
 
     private boolean isRetryable(int statusCode) {
         return statusCode == 429 || (statusCode >= 500 && statusCode <= 599);
+    }
+
+    private String truncate(String text, int maxLength) {
+        if (text == null || text.length() <= maxLength) {
+            return text;
+        }
+        return text.substring(0, maxLength) + "...";
     }
 }

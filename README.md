@@ -244,6 +244,10 @@ temperature = 0.7
 apiKey = "ak_..."
 model = "LongCat-Flash-Thinking-2601"
 
+[iflow]
+apiKey = "sk-..."
+model = "glm-4.6"
+
 [deepseek]
 apiKey = "sk-..."
 model = "deepseek-chat"

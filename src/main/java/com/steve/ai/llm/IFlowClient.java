@@ -58,7 +58,7 @@ public class IFlowClient {
 
                 if (response.statusCode() == 429 || response.statusCode() >= 500) {
                     if (attempt < MAX_RETRIES - 1) {
-                        long delayMs = (long) INITIAL_RETRY_DELAY_MS * (int) Math.pow(2, attempt);
+                        long delayMs = (long) (INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt));
                         SteveMod.LOGGER.warn("iFlow API failed ({}), retrying in {}ms", response.statusCode(), delayMs);
                         try {
                             Thread.sleep(delayMs);
@@ -74,7 +74,7 @@ public class IFlowClient {
                 return null;
             } catch (Exception e) {
                 if (attempt < MAX_RETRIES - 1) {
-                    long delayMs = (long) INITIAL_RETRY_DELAY_MS * (int) Math.pow(2, attempt);
+                    long delayMs = (long) (INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt));
                     SteveMod.LOGGER.warn("Error communicating with iFlow API, retrying in {}ms", delayMs, e);
                     try {
                         Thread.sleep(delayMs);
@@ -117,7 +117,7 @@ public class IFlowClient {
             JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
             return json.getAsJsonArray("choices").get(0).getAsJsonObject()
                 .getAsJsonObject("message").get("content").getAsString();
-        } catch (Exception e) {
+        } catch (com.google.gson.JsonParseException | IllegalStateException | IndexOutOfBoundsException e) {
             SteveMod.LOGGER.error("Error parsing iFlow response", e);
             return null;
         }
