@@ -15,33 +15,37 @@ import java.util.concurrent.CompletableFuture;
 
 public class TaskPlanner {
     // Legacy synchronous clients (for backward compatibility)
+    private final LongCatClient longCatClient;
+    private final DeepSeekClient deepSeekClient;
     private final OpenAIClient openAIClient;
     private final GeminiClient geminiClient;
     private final GroqClient groqClient;
-    private final DeepSeekClient deepSeekClient;
 
     // NEW: Async resilient clients
-    private final AsyncLLMClient asyncOpenAIClient;
-    private final AsyncLLMClient asyncGroqClient;
-    private final AsyncLLMClient asyncGeminiClient;
+    private final AsyncLLMClient asyncLongCatClient;
     private final AsyncLLMClient asyncDeepSeekClient;
+    private final AsyncLLMClient asyncOpenAIClient;
+    private final AsyncLLMClient asyncGeminiClient;
+    private final AsyncLLMClient asyncGroqClient;
     private final LLMCache llmCache;
     private final LLMFallbackHandler fallbackHandler;
 
     public TaskPlanner() {
         // Legacy clients (always initialize - these work without external dependencies)
+        this.longCatClient = new LongCatClient();
+        this.deepSeekClient = new DeepSeekClient();
         this.openAIClient = new OpenAIClient();
         this.geminiClient = new GeminiClient();
         this.groqClient = new GroqClient();
-        this.deepSeekClient = new DeepSeekClient();
 
         // Initialize async infrastructure (may fail if Caffeine/Resilience4j not available in runtime)
         LLMCache tempCache = null;
         LLMFallbackHandler tempFallback = null;
-        AsyncLLMClient tempAsyncOpenAI = null;
-        AsyncLLMClient tempAsyncGroq = null;
-        AsyncLLMClient tempAsyncGemini = null;
+        AsyncLLMClient tempAsyncLongCat = null;
         AsyncLLMClient tempAsyncDeepSeek = null;
+        AsyncLLMClient tempAsyncOpenAI = null;
+        AsyncLLMClient tempAsyncGemini = null;
+        AsyncLLMClient tempAsyncGroq = null;
 
         try {
             tempCache = new LLMCache();
@@ -52,24 +56,13 @@ public class TaskPlanner {
             double temperature = SteveConfig.TEMPERATURE.get();
 
             // Create base async clients with their respective configurations
-            AsyncLLMClient baseOpenAI = new AsyncOpenAIClient(
-                SteveConfig.OPENAI_API_KEY.get(), 
-                SteveConfig.OPENAI_MODEL.get(), 
-                maxTokens, 
+            AsyncLLMClient baseLongCat = new AsyncLongCatClient(
+                SteveConfig.LONGCAT_API_KEY.get(),
+                SteveConfig.LONGCAT_MODEL.get(),
+                maxTokens,
                 temperature
             );
-            AsyncLLMClient baseGroq = new AsyncGroqClient(
-                SteveConfig.GROQ_API_KEY.get(), 
-                SteveConfig.GROQ_MODEL.get(), 
-                maxTokens, 
-                temperature
-            );
-            AsyncLLMClient baseGemini = new AsyncGeminiClient(
-                SteveConfig.GEMINI_API_KEY.get(), 
-                SteveConfig.GEMINI_MODEL.get(), 
-                maxTokens, 
-                temperature
-            );
+
             AsyncLLMClient baseDeepSeek = new AsyncDeepSeekClient(
                 SteveConfig.DEEPSEEK_API_KEY.get(),
                 SteveConfig.DEEPSEEK_MODEL.get(),
@@ -77,11 +70,33 @@ public class TaskPlanner {
                 temperature
             );
 
+            AsyncLLMClient baseOpenAI = new AsyncOpenAIClient(
+                SteveConfig.OPENAI_API_KEY.get(), 
+                SteveConfig.OPENAI_MODEL.get(), 
+                maxTokens, 
+                temperature
+            );
+
+            AsyncLLMClient baseGemini = new AsyncGeminiClient(
+                SteveConfig.GEMINI_API_KEY.get(), 
+                SteveConfig.GEMINI_MODEL.get(), 
+                maxTokens, 
+                temperature
+            );
+
+            AsyncLLMClient baseGroq = new AsyncGroqClient(
+                SteveConfig.GROQ_API_KEY.get(), 
+                SteveConfig.GROQ_MODEL.get(), 
+                maxTokens, 
+                temperature
+            );
+
             // Wrap with resilience patterns (caching, retries, circuit breaker)
-            tempAsyncOpenAI = new ResilientLLMClient(baseOpenAI, tempCache, tempFallback);
-            tempAsyncGroq = new ResilientLLMClient(baseGroq, tempCache, tempFallback);
-            tempAsyncGemini = new ResilientLLMClient(baseGemini, tempCache, tempFallback);
+            tempAsyncLongCat = new ResilientLLMClient(baseLongCat, tempCache, tempFallback);
             tempAsyncDeepSeek = new ResilientLLMClient(baseDeepSeek, tempCache, tempFallback);
+            tempAsyncOpenAI = new ResilientLLMClient(baseOpenAI, tempCache, tempFallback);
+            tempAsyncGemini = new ResilientLLMClient(baseGemini, tempCache, tempFallback);
+            tempAsyncGroq = new ResilientLLMClient(baseGroq, tempCache, tempFallback);
 
             SteveMod.LOGGER.info("TaskPlanner initialized with async resilient clients");
         } catch (NoClassDefFoundError | Exception e) {
@@ -90,10 +105,11 @@ public class TaskPlanner {
 
         this.llmCache = tempCache;
         this.fallbackHandler = tempFallback;
-        this.asyncOpenAIClient = tempAsyncOpenAI;
-        this.asyncGroqClient = tempAsyncGroq;
-        this.asyncGeminiClient = tempAsyncGemini;
+        this.asyncLongCatClient = tempAsyncLongCat;
         this.asyncDeepSeekClient = tempAsyncDeepSeek;
+        this.asyncOpenAIClient = tempAsyncOpenAI;
+        this.asyncGeminiClient = tempAsyncGemini;
+        this.asyncGroqClient = tempAsyncGroq;
     }
 
     public ResponseParser.ParsedResponse planTasks(SteveEntity steve, String command) {
@@ -129,19 +145,20 @@ public class TaskPlanner {
 
     private String getAIResponse(String provider, String systemPrompt, String userPrompt) {
         String response = switch (provider) {
-            case "groq" -> groqClient.sendRequest(systemPrompt, userPrompt);
-            case "gemini" -> geminiClient.sendRequest(systemPrompt, userPrompt);
-            case "openai" -> openAIClient.sendRequest(systemPrompt, userPrompt);
+            case "longcat" -> longCatClient.sendRequest(systemPrompt, userPrompt);
             case "deepseek" -> deepSeekClient.sendRequest(systemPrompt, userPrompt);
+            case "openai" -> openAIClient.sendRequest(systemPrompt, userPrompt);
+            case "gemini" -> geminiClient.sendRequest(systemPrompt, userPrompt);
+            case "groq" -> groqClient.sendRequest(systemPrompt, userPrompt);
             default -> {
-                SteveMod.LOGGER.warn("Unknown AI provider '{}', using Groq", provider);
-                yield groqClient.sendRequest(systemPrompt, userPrompt);
+                SteveMod.LOGGER.warn("Unknown AI provider '{}', using LongCat", provider);
+                yield longCatClient.sendRequest(systemPrompt, userPrompt);
             }
         };
 
-        if (response == null && !provider.equals("groq")) {
-            SteveMod.LOGGER.warn("{} failed, trying Groq as fallback", provider);
-            response = groqClient.sendRequest(systemPrompt, userPrompt);
+        if (response == null && !provider.equals("longcat")) {
+            SteveMod.LOGGER.warn("{} failed, trying LongCat as fallback", provider);
+            response = longCatClient.sendRequest(systemPrompt, userPrompt);
         }
 
         return response;
@@ -175,10 +192,12 @@ public class TaskPlanner {
 
             // Build params map with provider-specific model
             String modelForProvider = switch (provider) {
+                case "longcat" -> SteveConfig.LONGCAT_MODEL.get();
                 case "deepseek" -> SteveConfig.DEEPSEEK_MODEL.get();
-                case "groq" -> SteveConfig.GROQ_MODEL.get();
+                case "openai" -> SteveConfig.OPENAI_MODEL.get();
                 case "gemini" -> SteveConfig.GEMINI_MODEL.get();
-                default -> SteveConfig.OPENAI_MODEL.get();
+                case "groq" -> SteveConfig.GROQ_MODEL.get();
+                default -> SteveConfig.LONGCAT_MODEL.get();
             };
             
             Map<String, Object> params = Map.of(
@@ -256,24 +275,26 @@ public class TaskPlanner {
      */
     private AsyncLLMClient getAsyncClient(String provider) {
         AsyncLLMClient client = switch (provider) {
+            case "longcat" -> asyncLongCatClient;
+            case "deepseek" -> asyncDeepSeekClient;
             case "openai" -> asyncOpenAIClient;
             case "gemini" -> asyncGeminiClient;
             case "groq" -> asyncGroqClient;
-            case "deepseek" -> asyncDeepSeekClient;
             default -> {
-                SteveMod.LOGGER.warn("[Async] Unknown provider '{}', trying Groq as fallback", provider);
-                yield asyncGroqClient;
+                SteveMod.LOGGER.warn("[Async] Unknown provider '{}', trying LongCat as fallback", provider);
+                yield asyncLongCatClient;
             }
         };
         
         // Null check - if preferred client is null, try fallback options
         if (client == null) {
             SteveMod.LOGGER.warn("[Async] Client for provider '{}' is null, trying fallbacks", provider);
-            // Try fallback order: groq -> openai -> gemini -> deepseek
-            if (asyncGroqClient != null) return asyncGroqClient;
+            // Try fallback order: longcat -> deepseek -> openai -> gemini -> groq
+            if (asyncLongCatClient != null) return asyncLongCatClient;
+            if (asyncDeepSeekClient != null) return asyncDeepSeekClient;
             if (asyncOpenAIClient != null) return asyncOpenAIClient;
             if (asyncGeminiClient != null) return asyncGeminiClient;
-            if (asyncDeepSeekClient != null) return asyncDeepSeekClient;
+            if (asyncGroqClient != null) return asyncGroqClient;
         }
         return client;
     }
