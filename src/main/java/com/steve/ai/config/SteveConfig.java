@@ -7,6 +7,8 @@ public class SteveConfig {
     public static final ForgeConfigSpec.ConfigValue<String> AI_PROVIDER;
     public static final ForgeConfigSpec.ConfigValue<String> OPENAI_API_KEY;
     public static final ForgeConfigSpec.ConfigValue<String> OPENAI_MODEL;
+    public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_API_KEY;
+    public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_MODEL;
     public static final ForgeConfigSpec.IntValue MAX_TOKENS;
     public static final ForgeConfigSpec.DoubleValue TEMPERATURE;
     public static final ForgeConfigSpec.IntValue ACTION_TICK_DELAY;
@@ -19,7 +21,7 @@ public class SteveConfig {
         builder.comment("AI API Configuration").push("ai");
         
         AI_PROVIDER = builder
-            .comment("AI provider to use: 'groq' (FASTEST, FREE), 'openai', or 'gemini'")
+            .comment("AI provider to use: 'groq' (FASTEST, FREE), 'openai', 'gemini', or 'deepseek'")
             .define("provider", "groq");
         
         builder.pop();
@@ -44,6 +46,18 @@ public class SteveConfig {
         
         builder.pop();
 
+        builder.comment("DeepSeek API Configuration").push("deepseek");
+        
+        DEEPSEEK_API_KEY = builder
+            .comment("Your DeepSeek API key (get from: https://platform.deepseek.com/api_keys)")
+            .define("apiKey", "");
+        
+        DEEPSEEK_MODEL = builder
+            .comment("DeepSeek model to use (deepseek-chat, deepseek-reasoner)")
+            .define("model", "deepseek-chat");
+        
+        builder.pop();
+
         builder.comment("Steve Behavior Configuration").push("behavior");
         
         ACTION_TICK_DELAY = builder
@@ -63,4 +77,3 @@ public class SteveConfig {
         SPEC = builder.build();
     }
 }
-

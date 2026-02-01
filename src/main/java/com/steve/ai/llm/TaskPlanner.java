@@ -18,6 +18,7 @@ public class TaskPlanner {
     private final OpenAIClient openAIClient;
     private final GeminiClient geminiClient;
     private final GroqClient groqClient;
+    private final DeepSeekClient deepSeekClient;
 
     // NEW: Async resilient clients
     private final AsyncLLMClient asyncOpenAIClient;
@@ -27,32 +28,49 @@ public class TaskPlanner {
     private final LLMFallbackHandler fallbackHandler;
 
     public TaskPlanner() {
-        // Legacy clients
+        // Legacy clients (always initialize - these work without external dependencies)
         this.openAIClient = new OpenAIClient();
         this.geminiClient = new GeminiClient();
         this.groqClient = new GroqClient();
+        this.deepSeekClient = new DeepSeekClient();
 
-        // Initialize async infrastructure
-        this.llmCache = new LLMCache();
-        this.fallbackHandler = new LLMFallbackHandler();
+        // Initialize async infrastructure (may fail if Caffeine/Resilience4j not available in runtime)
+        LLMCache tempCache = null;
+        LLMFallbackHandler tempFallback = null;
+        AsyncLLMClient tempAsyncOpenAI = null;
+        AsyncLLMClient tempAsyncGroq = null;
+        AsyncLLMClient tempAsyncGemini = null;
 
-        // Initialize async clients with resilience wrappers
-        String apiKey = SteveConfig.OPENAI_API_KEY.get();
-        String model = SteveConfig.OPENAI_MODEL.get();
-        int maxTokens = SteveConfig.MAX_TOKENS.get();
-        double temperature = SteveConfig.TEMPERATURE.get();
+        try {
+            tempCache = new LLMCache();
+            tempFallback = new LLMFallbackHandler();
 
-        // Create base async clients
-        AsyncLLMClient baseOpenAI = new AsyncOpenAIClient(apiKey, model, maxTokens, temperature);
-        AsyncLLMClient baseGroq = new AsyncGroqClient(apiKey, "llama-3.1-8b-instant", 500, temperature);
-        AsyncLLMClient baseGemini = new AsyncGeminiClient(apiKey, "gemini-1.5-flash", maxTokens, temperature);
+            // Initialize async clients with resilience wrappers
+            String apiKey = SteveConfig.OPENAI_API_KEY.get();
+            String model = SteveConfig.OPENAI_MODEL.get();
+            int maxTokens = SteveConfig.MAX_TOKENS.get();
+            double temperature = SteveConfig.TEMPERATURE.get();
 
-        // Wrap with resilience patterns
-        this.asyncOpenAIClient = new ResilientLLMClient(baseOpenAI, llmCache, fallbackHandler);
-        this.asyncGroqClient = new ResilientLLMClient(baseGroq, llmCache, fallbackHandler);
-        this.asyncGeminiClient = new ResilientLLMClient(baseGemini, llmCache, fallbackHandler);
+            // Create base async clients
+            AsyncLLMClient baseOpenAI = new AsyncOpenAIClient(apiKey, model, maxTokens, temperature);
+            AsyncLLMClient baseGroq = new AsyncGroqClient(apiKey, "llama-3.1-8b-instant", 500, temperature);
+            AsyncLLMClient baseGemini = new AsyncGeminiClient(apiKey, "gemini-1.5-flash", maxTokens, temperature);
 
-        SteveMod.LOGGER.info("TaskPlanner initialized with async resilient clients");
+            // Wrap with resilience patterns
+            tempAsyncOpenAI = new ResilientLLMClient(baseOpenAI, tempCache, tempFallback);
+            tempAsyncGroq = new ResilientLLMClient(baseGroq, tempCache, tempFallback);
+            tempAsyncGemini = new ResilientLLMClient(baseGemini, tempCache, tempFallback);
+
+            SteveMod.LOGGER.info("TaskPlanner initialized with async resilient clients");
+        } catch (NoClassDefFoundError | Exception e) {
+            SteveMod.LOGGER.warn("Failed to initialize async clients (missing dependencies), using sync-only mode: {}", e.getMessage());
+        }
+
+        this.llmCache = tempCache;
+        this.fallbackHandler = tempFallback;
+        this.asyncOpenAIClient = tempAsyncOpenAI;
+        this.asyncGroqClient = tempAsyncGroq;
+        this.asyncGeminiClient = tempAsyncGemini;
     }
 
     public ResponseParser.ParsedResponse planTasks(SteveEntity steve, String command) {
@@ -91,6 +109,7 @@ public class TaskPlanner {
             case "groq" -> groqClient.sendRequest(systemPrompt, userPrompt);
             case "gemini" -> geminiClient.sendRequest(systemPrompt, userPrompt);
             case "openai" -> openAIClient.sendRequest(systemPrompt, userPrompt);
+            case "deepseek" -> deepSeekClient.sendRequest(systemPrompt, userPrompt);
             default -> {
                 SteveMod.LOGGER.warn("Unknown AI provider '{}', using Groq", provider);
                 yield groqClient.sendRequest(systemPrompt, userPrompt);
@@ -129,6 +148,26 @@ public class TaskPlanner {
             String provider = SteveConfig.AI_PROVIDER.get().toLowerCase();
             SteveMod.LOGGER.info("[Async] Requesting AI plan for Steve '{}' using {}: {}",
                 steve.getSteveName(), provider, command);
+
+            // DeepSeek doesn't have async client yet, use sync API wrapped in CompletableFuture
+            if ("deepseek".equals(provider)) {
+                return CompletableFuture.supplyAsync(() -> {
+                    String response = deepSeekClient.sendRequest(systemPrompt, userPrompt);
+                    if (response == null || response.isEmpty()) {
+                        SteveMod.LOGGER.error("[DeepSeek] Empty response from API");
+                        return null;
+                    }
+                    ResponseParser.ParsedResponse parsed = ResponseParser.parseAIResponse(response);
+                    if (parsed != null) {
+                        SteveMod.LOGGER.info("[DeepSeek] Plan received: {} ({} tasks)",
+                            parsed.getPlan(), parsed.getTasks().size());
+                    }
+                    return parsed;
+                }).exceptionally(throwable -> {
+                    SteveMod.LOGGER.error("[DeepSeek] Error planning tasks: {}", throwable.getMessage());
+                    return null;
+                });
+            }
 
             // Build params map
             Map<String, Object> params = Map.of(
