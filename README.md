@@ -27,7 +27,7 @@ The agents aren't following predefined scripts. They're operating off natural la
 **You need:**
 - Minecraft 1.20.1 with Forge
 - Java 17
-- An LLM API key (OpenAI GPT-5, Gemini 3, Groq, or DeepSeek)
+- An LLM API key (LongCat, DeepSeek, OpenAI GPT-5, Gemini 3, or Groq)
 
 **Installation:**
 1. Download the JAR from releases
@@ -39,13 +39,13 @@ The agents aren't following predefined scripts. They're operating off natural la
 **Config example (`config/steve-common.toml`):**
 ```toml
 [ai]
-provider = "groq"
+provider = "longcat"
 maxTokens = 8000
 temperature = 0.7
 
-[groq]
-apiKey = "your-groq-api-key-here"
-model = "llama-3.1-8b-instant"
+[longcat]
+apiKey = "ak_xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+model = "LongCat-Flash-Thinking-2601"
 ```
 
 Then spawn a Steve with `/steve spawn Bob` and press K to start giving commands.
@@ -83,7 +83,7 @@ Each Steve runs an autonomous agent loop that processes natural language command
 ### Core Components
 
 **LLM Integration** (`com.steve.ai.llm`)
-- **Multi-Provider Support**: Pluggable clients for OpenAI, Groq, Gemini, and DeepSeek.
+- **Multi-Provider Support**: Pluggable clients for LongCat, DeepSeek, OpenAI, Gemini, and Groq.
 - **Resilient Clients**: Async implementations with caching, retries, and circuit breaker patterns.
 - **TaskPlanner**: Orchestrates LLM calls with context (conversation history, world state, Steve capabilities)
 - **PromptBuilder**: Constructs prompts with available actions, examples, and formatting instructions
@@ -236,31 +236,36 @@ Edit `config/steve-common.toml`. Each provider now has its own section for bette
 
 ```toml
 [ai]
-provider = "groq"  # Options: openai, groq, gemini, deepseek
+provider = "longcat"  # Options: longcat, deepseek, openai, gemini, groq
 maxTokens = 8000
 temperature = 0.7
+
+[longcat]
+apiKey = "ak_..."
+model = "LongCat-Flash-Thinking-2601"
+
+[deepseek]
+apiKey = "sk-..."
+model = "deepseek-chat"
 
 [openai]
 apiKey = "sk-..."
 model = "gpt-5-mini-2025-08-07"
 
-[groq]
-apiKey = "gsk_..."
-model = "llama-3.1-8b-instant"
-
 [gemini]
 apiKey = "AIza..."
 model = "gemini-3-flash-preview"
 
-[deepseek]
-apiKey = "sk-..."
-model = "deepseek-chat"
+[groq]
+apiKey = "gsk_..."
+model = "llama-3.1-8b-instant"
 ```
 
 **Performance Tips:**
-- **Groq**: Fastest inference, best for smooth real-time reactions.
-- **Gemini 3 / GPT-5**: Excellent for complex multi-step planning.
+- **LongCat**: OpenAI-compatible, great for flash-chat thinking speed.
 - **DeepSeek**: Great balance of quality and cost-efficiency.
+- **Gemini 3 / GPT-5**: Excellent for complex multi-step planning.
+- **Groq**: Fastest inference, best for smooth real-time reactions.
 - **Temperature**: Recommended 0.5-0.7 for consistent task execution.
 
 ## Known Issues

@@ -1,0 +1,113 @@
+package com.steve.ai.llm;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.steve.ai.SteveMod;
+import com.steve.ai.config.SteveConfig;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+
+/**
+ * Client for LongCat API - OpenAI-compatible
+ * Endpoint: https://api.longcat.chat/openai/v1/chat/completions
+ * API Keys: https://longcat.chat/platform/api_keys
+ */
+public class LongCatClient {
+    private static final String LONGCAT_API_URL = "https://api.longcat.chat/openai/v1/chat/completions";
+    private static final int MAX_RETRIES = 3;
+    private static final int INITIAL_RETRY_DELAY_MS = 1000;
+
+    private final HttpClient client;
+    private final String apiKey;
+
+    public LongCatClient() {
+        this.apiKey = SteveConfig.LONGCAT_API_KEY.get();
+        this.client = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(30))
+            .build();
+    }
+
+    public String sendRequest(String systemPrompt, String userPrompt) {
+        if (apiKey == null || apiKey.isEmpty()) {
+            SteveMod.LOGGER.error("LongCat API key not configured!");
+            return null;
+        }
+
+        JsonObject requestBody = buildRequestBody(systemPrompt, userPrompt);
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(LONGCAT_API_URL))
+            .header("Authorization", "Bearer " + apiKey)
+            .header("Content-Type", "application/json")
+            .timeout(Duration.ofSeconds(60))
+            .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
+            .build();
+
+        for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            try {
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                if (response.statusCode() == 200) {
+                    return parseResponse(response.body());
+                }
+
+                if (response.statusCode() == 429 || response.statusCode() >= 500) {
+                    if (attempt < MAX_RETRIES - 1) {
+                        int delayMs = INITIAL_RETRY_DELAY_MS * (int) Math.pow(2, attempt);
+                        SteveMod.LOGGER.warn("LongCat API failed ({}), retrying in {}ms", response.statusCode(), delayMs);
+                        Thread.sleep(delayMs);
+                        continue;
+                    }
+                }
+
+                SteveMod.LOGGER.error("LongCat API request failed: {}", response.statusCode());
+                return null;
+            } catch (Exception e) {
+                if (attempt < MAX_RETRIES - 1) {
+                    try { Thread.sleep(INITIAL_RETRY_DELAY_MS * (int) Math.pow(2, attempt)); } catch (Exception ignored) {}
+                } else {
+                    SteveMod.LOGGER.error("Error communicating with LongCat API", e);
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    private JsonObject buildRequestBody(String systemPrompt, String userPrompt) {
+        JsonObject body = new JsonObject();
+        body.addProperty("model", SteveConfig.LONGCAT_MODEL.get());
+        body.addProperty("temperature", SteveConfig.TEMPERATURE.get());
+        body.addProperty("max_tokens", SteveConfig.MAX_TOKENS.get());
+
+        JsonArray messages = new JsonArray();
+        JsonObject systemMessage = new JsonObject();
+        systemMessage.addProperty("role", "system");
+        systemMessage.addProperty("content", systemPrompt);
+        messages.add(systemMessage);
+
+        JsonObject userMessage = new JsonObject();
+        userMessage.addProperty("role", "user");
+        userMessage.addProperty("content", userPrompt);
+        messages.add(userMessage);
+
+        body.add("messages", messages);
+        return body;
+    }
+
+    private String parseResponse(String responseBody) {
+        try {
+            JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
+            return json.getAsJsonArray("choices").get(0).getAsJsonObject()
+                .getAsJsonObject("message").get("content").getAsString();
+        } catch (Exception e) {
+            SteveMod.LOGGER.error("Error parsing LongCat response", e);
+            return null;
+        }
+    }
+}

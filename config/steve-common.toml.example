@@ -1,7 +1,7 @@
 # AI Provider Configuration
 [ai]
-    # AI provider to use: 'groq' (FASTEST, FREE), 'openai', 'gemini', or 'deepseek'
-    provider = "groq"
+    # AI provider to use: 'longcat', 'deepseek', 'openai', 'gemini', or 'groq'
+    provider = "longcat"
     
     # Maximum tokens per API request (applies to all LLM providers)
     maxTokens = 8000
@@ -9,14 +9,14 @@
     # Temperature for AI responses (0.0-2.0, lower is more deterministic)
     temperature = 0.7
 
-# OpenAI API Configuration
-[openai]
-    # Your OpenAI API key
-    # Get your API key from: https://platform.openai.com/api-keys
-    apiKey = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+# LongCat API Configuration
+[longcat]
+    # Your LongCat API key
+    # Get your API key from: https://longcat.chat/platform/api_keys
+    apiKey = "ak_xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     
-    # OpenAI model to use (gpt-5.2, gpt-5.2-codex, gpt-5-mini-2025-08-07, gpt-5-nano-2025-08-07)
-    model = "gpt-5-mini-2025-08-07"
+    # LongCat model to use (LongCat-Flash-Chat, LongCat-Flash-Thinking, LongCat-Flash-Thinking-2601)
+    model = "LongCat-Flash-Thinking-2601"
 
 # DeepSeek API Configuration
 [deepseek]
@@ -27,14 +27,14 @@
     # DeepSeek model to use (deepseek-chat, deepseek-reasoner)
     model = "deepseek-chat"
 
-# Groq API Configuration (FASTEST, FREE tier available)
-[groq]
-    # Your Groq API key
-    # Get your API key from: https://console.groq.com/keys
-    apiKey = "gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+# OpenAI API Configuration
+[openai]
+    # Your OpenAI API key
+    # Get your API key from: https://platform.openai.com/api-keys
+    apiKey = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     
-    # Groq model to use (llama-3.1-8b-instant, llama-3.1-70b-versatile, mixtral-8x7b-32768)
-    model = "llama-3.1-8b-instant"
+    # OpenAI model to use (gpt-5.2, gpt-5.2-codex, gpt-5-mini-2025-08-07, gpt-5-nano-2025-08-07)
+    model = "gpt-5-mini-2025-08-07"
 
 # Google Gemini API Configuration
 [gemini]
@@ -44,6 +44,15 @@
     
     # Gemini model to use (gemini-3-pro-preview, gemini-3-flash-preview, gemini-flash-lite-latest)
     model = "gemini-3-flash-preview"
+
+# Groq API Configuration (FASTEST, FREE tier available)
+[groq]
+    # Your Groq API key
+    # Get your API key from: https://console.groq.com/keys
+    apiKey = "gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    
+    # Groq model to use (llama-3.1-8b-instant, llama-3.1-70b-versatile, mixtral-8x7b-32768)
+    model = "llama-3.1-8b-instant"
 
 # Steve Behavior Configuration
 [behavior]

@@ -10,21 +10,25 @@ public class SteveConfig {
     public static final ForgeConfigSpec.IntValue MAX_TOKENS;
     public static final ForgeConfigSpec.DoubleValue TEMPERATURE;
     
-    // OpenAI
-    public static final ForgeConfigSpec.ConfigValue<String> OPENAI_API_KEY;
-    public static final ForgeConfigSpec.ConfigValue<String> OPENAI_MODEL;
-    
+    // LongCat
+    public static final ForgeConfigSpec.ConfigValue<String> LONGCAT_API_KEY;
+    public static final ForgeConfigSpec.ConfigValue<String> LONGCAT_MODEL;
+
     // DeepSeek
     public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_API_KEY;
     public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_MODEL;
-    
-    // Groq
-    public static final ForgeConfigSpec.ConfigValue<String> GROQ_API_KEY;
-    public static final ForgeConfigSpec.ConfigValue<String> GROQ_MODEL;
-    
+
+    // OpenAI
+    public static final ForgeConfigSpec.ConfigValue<String> OPENAI_API_KEY;
+    public static final ForgeConfigSpec.ConfigValue<String> OPENAI_MODEL;
+
     // Gemini
     public static final ForgeConfigSpec.ConfigValue<String> GEMINI_API_KEY;
     public static final ForgeConfigSpec.ConfigValue<String> GEMINI_MODEL;
+
+    // Groq
+    public static final ForgeConfigSpec.ConfigValue<String> GROQ_API_KEY;
+    public static final ForgeConfigSpec.ConfigValue<String> GROQ_MODEL;
     
     // Behavior
     public static final ForgeConfigSpec.IntValue ACTION_TICK_DELAY;
@@ -37,8 +41,8 @@ public class SteveConfig {
         builder.comment("AI API Configuration").push("ai");
         
         AI_PROVIDER = builder
-            .comment("AI provider to use: 'groq' (FASTEST, FREE), 'openai', 'gemini', or 'deepseek'")
-            .define("provider", "groq");
+            .comment("AI provider to use: 'longcat', 'deepseek', 'openai', 'gemini', or 'groq' (FASTEST, FREE)")
+            .define("provider", "longcat");
         
         MAX_TOKENS = builder
             .comment("Maximum tokens per API request (applies to all LLM providers)")
@@ -50,15 +54,15 @@ public class SteveConfig {
         
         builder.pop();
 
-        builder.comment("OpenAI API Configuration").push("openai");
+        builder.comment("LongCat API Configuration").push("longcat");
         
-        OPENAI_API_KEY = builder
-            .comment("Your OpenAI API key (get from: https://platform.openai.com/api-keys)")
+        LONGCAT_API_KEY = builder
+            .comment("Your LongCat API key (get from: https://longcat.chat/platform/api_keys)")
             .define("apiKey", "");
         
-        OPENAI_MODEL = builder
-            .comment("OpenAI model to use (gpt-5.2, gpt-5.2-codex, gpt-5-mini-2025-08-07, gpt-5-nano-2025-08-07)")
-            .define("model", "gpt-5-mini-2025-08-07");
+        LONGCAT_MODEL = builder
+            .comment("LongCat model to use (LongCat-Flash-Chat, LongCat-Flash-Thinking, LongCat-Flash-Thinking-2601)")
+            .define("model", "LongCat-Flash-Thinking-2601");
         
         builder.pop();
 
@@ -74,15 +78,15 @@ public class SteveConfig {
         
         builder.pop();
 
-        builder.comment("Groq API Configuration (FASTEST, FREE tier available)").push("groq");
+        builder.comment("OpenAI API Configuration").push("openai");
         
-        GROQ_API_KEY = builder
-            .comment("Your Groq API key (get from: https://console.groq.com/keys)")
+        OPENAI_API_KEY = builder
+            .comment("Your OpenAI API key (get from: https://platform.openai.com/api-keys)")
             .define("apiKey", "");
         
-        GROQ_MODEL = builder
-            .comment("Groq model to use (llama-3.1-8b-instant, llama-3.1-70b-versatile, mixtral-8x7b-32768)")
-            .define("model", "llama-3.1-8b-instant");
+        OPENAI_MODEL = builder
+            .comment("OpenAI model to use (gpt-5.2, gpt-5.2-codex, gpt-5-mini-2025-08-07, gpt-5-nano-2025-08-07)")
+            .define("model", "gpt-5-mini-2025-08-07");
         
         builder.pop();
 
@@ -95,6 +99,18 @@ public class SteveConfig {
         GEMINI_MODEL = builder
             .comment("Gemini model to use (gemini-3-pro-preview, gemini-3-flash-preview, gemini-flash-lite-latest)")
             .define("model", "gemini-3-flash-preview");
+        
+        builder.pop();
+
+        builder.comment("Groq API Configuration (FASTEST, FREE tier available)").push("groq");
+        
+        GROQ_API_KEY = builder
+            .comment("Your Groq API key (get from: https://console.groq.com/keys)")
+            .define("apiKey", "");
+        
+        GROQ_MODEL = builder
+            .comment("Groq model to use (llama-3.1-8b-instant, llama-3.1-70b-versatile, mixtral-8x7b-32768)")
+            .define("model", "llama-3.1-8b-instant");
         
         builder.pop();
 
