@@ -24,7 +24,7 @@ public class GroqClient {
     private final String apiKey;
 
     public GroqClient() {
-        this.apiKey = SteveConfig.OPENAI_API_KEY.get(); // Reuse same config field
+        this.apiKey = SteveConfig.GROQ_API_KEY.get();
         this.client = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)
             .connectTimeout(Duration.ofSeconds(10))
@@ -38,7 +38,7 @@ public class GroqClient {
         }
 
         JsonObject requestBody = new JsonObject();
-        requestBody.addProperty("model", "llama-3.1-8b-instant");
+        requestBody.addProperty("model", SteveConfig.GROQ_MODEL.get());
         
         JsonArray messages = new JsonArray();
         

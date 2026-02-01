@@ -48,15 +48,28 @@ public class TaskPlanner {
             tempFallback = new LLMFallbackHandler();
 
             // Initialize async clients with resilience wrappers
-            String apiKey = SteveConfig.OPENAI_API_KEY.get();
-            String model = SteveConfig.OPENAI_MODEL.get();
             int maxTokens = SteveConfig.MAX_TOKENS.get();
             double temperature = SteveConfig.TEMPERATURE.get();
 
-            // Create base async clients
-            AsyncLLMClient baseOpenAI = new AsyncOpenAIClient(apiKey, model, maxTokens, temperature);
-            AsyncLLMClient baseGroq = new AsyncGroqClient(apiKey, "llama-3.1-8b-instant", 500, temperature);
-            AsyncLLMClient baseGemini = new AsyncGeminiClient(apiKey, "gemini-1.5-flash", maxTokens, temperature);
+            // Create base async clients with their respective configurations
+            AsyncLLMClient baseOpenAI = new AsyncOpenAIClient(
+                SteveConfig.OPENAI_API_KEY.get(), 
+                SteveConfig.OPENAI_MODEL.get(), 
+                maxTokens, 
+                temperature
+            );
+            AsyncLLMClient baseGroq = new AsyncGroqClient(
+                SteveConfig.GROQ_API_KEY.get(), 
+                SteveConfig.GROQ_MODEL.get(), 
+                maxTokens, 
+                temperature
+            );
+            AsyncLLMClient baseGemini = new AsyncGeminiClient(
+                SteveConfig.GEMINI_API_KEY.get(), 
+                SteveConfig.GEMINI_MODEL.get(), 
+                maxTokens, 
+                temperature
+            );
             AsyncLLMClient baseDeepSeek = new AsyncDeepSeekClient();
 
             // Wrap with resilience patterns (caching, retries, circuit breaker)

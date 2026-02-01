@@ -4,13 +4,29 @@ import net.minecraftforge.common.ForgeConfigSpec;
 
 public class SteveConfig {
     public static final ForgeConfigSpec SPEC;
+    
+    // AI Provider selection
     public static final ForgeConfigSpec.ConfigValue<String> AI_PROVIDER;
-    public static final ForgeConfigSpec.ConfigValue<String> OPENAI_API_KEY;
-    public static final ForgeConfigSpec.ConfigValue<String> OPENAI_MODEL;
-    public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_API_KEY;
-    public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_MODEL;
     public static final ForgeConfigSpec.IntValue MAX_TOKENS;
     public static final ForgeConfigSpec.DoubleValue TEMPERATURE;
+    
+    // OpenAI
+    public static final ForgeConfigSpec.ConfigValue<String> OPENAI_API_KEY;
+    public static final ForgeConfigSpec.ConfigValue<String> OPENAI_MODEL;
+    
+    // DeepSeek
+    public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_API_KEY;
+    public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_MODEL;
+    
+    // Groq
+    public static final ForgeConfigSpec.ConfigValue<String> GROQ_API_KEY;
+    public static final ForgeConfigSpec.ConfigValue<String> GROQ_MODEL;
+    
+    // Gemini
+    public static final ForgeConfigSpec.ConfigValue<String> GEMINI_API_KEY;
+    public static final ForgeConfigSpec.ConfigValue<String> GEMINI_MODEL;
+    
+    // Behavior
     public static final ForgeConfigSpec.IntValue ACTION_TICK_DELAY;
     public static final ForgeConfigSpec.BooleanValue ENABLE_CHAT_RESPONSES;
     public static final ForgeConfigSpec.IntValue MAX_ACTIVE_STEVES;
@@ -34,15 +50,15 @@ public class SteveConfig {
         
         builder.pop();
 
-        builder.comment("OpenAI/Gemini API Configuration (same key field used for both)").push("openai");
+        builder.comment("OpenAI API Configuration").push("openai");
         
         OPENAI_API_KEY = builder
-            .comment("Your OpenAI API key (required)")
+            .comment("Your OpenAI API key (get from: https://platform.openai.com/api-keys)")
             .define("apiKey", "");
         
         OPENAI_MODEL = builder
-            .comment("OpenAI model to use (gpt-4, gpt-4-turbo-preview, gpt-3.5-turbo)")
-            .define("model", "gpt-4-turbo-preview");
+            .comment("OpenAI model to use (gpt-5.2, gpt-5.2-codex, gpt-5-mini-2025-08-07, gpt-5-nano-2025-08-07)")
+            .define("model", "gpt-5-mini-2025-08-07");
         
         builder.pop();
 
@@ -55,6 +71,30 @@ public class SteveConfig {
         DEEPSEEK_MODEL = builder
             .comment("DeepSeek model to use (deepseek-chat, deepseek-reasoner)")
             .define("model", "deepseek-chat");
+        
+        builder.pop();
+
+        builder.comment("Groq API Configuration (FASTEST, FREE tier available)").push("groq");
+        
+        GROQ_API_KEY = builder
+            .comment("Your Groq API key (get from: https://console.groq.com/keys)")
+            .define("apiKey", "");
+        
+        GROQ_MODEL = builder
+            .comment("Groq model to use (llama-3.1-8b-instant, llama-3.1-70b-versatile, mixtral-8x7b-32768)")
+            .define("model", "llama-3.1-8b-instant");
+        
+        builder.pop();
+
+        builder.comment("Google Gemini API Configuration").push("gemini");
+        
+        GEMINI_API_KEY = builder
+            .comment("Your Gemini API key (get from: https://aistudio.google.com/apikey)")
+            .define("apiKey", "");
+        
+        GEMINI_MODEL = builder
+            .comment("Gemini model to use (gemini-3-pro-preview, gemini-3-flash-preview, gemini-flash-lite-latest)")
+            .define("model", "gemini-3-flash-preview");
         
         builder.pop();
 
