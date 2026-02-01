@@ -14,6 +14,10 @@ public class SteveConfig {
     public static final ForgeConfigSpec.ConfigValue<String> LONGCAT_API_KEY;
     public static final ForgeConfigSpec.ConfigValue<String> LONGCAT_MODEL;
 
+    // iFlow
+    public static final ForgeConfigSpec.ConfigValue<String> IFLOW_API_KEY;
+    public static final ForgeConfigSpec.ConfigValue<String> IFLOW_MODEL;
+
     // DeepSeek
     public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_API_KEY;
     public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_MODEL;
@@ -41,7 +45,7 @@ public class SteveConfig {
         builder.comment("AI API Configuration").push("ai");
         
         AI_PROVIDER = builder
-            .comment("AI provider to use: 'longcat', 'deepseek', 'openai', 'gemini', or 'groq' (FASTEST, FREE)")
+            .comment("AI provider to use: 'longcat', 'iflow', 'deepseek', 'openai', 'gemini', or 'groq' (FASTEST, FREE)")
             .define("provider", "longcat");
         
         MAX_TOKENS = builder
@@ -63,6 +67,19 @@ public class SteveConfig {
         LONGCAT_MODEL = builder
             .comment("LongCat model to use (LongCat-Flash-Chat, LongCat-Flash-Thinking, LongCat-Flash-Thinking-2601)")
             .define("model", "LongCat-Flash-Thinking-2601");
+        
+        builder.pop();
+
+
+        builder.comment("iFlow API Configuration").push("iflow");
+        
+        IFLOW_API_KEY = builder
+            .comment("Your iFlow API key (get from: https://platform.iflow.cn/profile?tab=apiKey)")
+            .define("apiKey", "");
+        
+        IFLOW_MODEL = builder
+            .comment("iFlow model to use (glm-4.6, kimi-k2, qwen3-coder-plus, qwen3-max, qwen3-vl-plus, deepseek-v3.2, tstars2.0, iflow-rome-30ba3b)")
+            .define("model", "glm-4.6");
         
         builder.pop();
 

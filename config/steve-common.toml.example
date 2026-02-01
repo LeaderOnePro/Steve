@@ -1,6 +1,6 @@
 # AI Provider Configuration
 [ai]
-    # AI provider to use: 'longcat', 'deepseek', 'openai', 'gemini', or 'groq'
+    # AI provider to use: 'longcat', 'iflow', 'deepseek', 'openai', 'gemini', or 'groq'
     provider = "longcat"
     
     # Maximum tokens per API request (applies to all LLM providers)
@@ -17,6 +17,14 @@
     
     # LongCat model to use (LongCat-Flash-Chat, LongCat-Flash-Thinking, LongCat-Flash-Thinking-2601)
     model = "LongCat-Flash-Thinking-2601"
+    
+# iFlow API Configuration
+[iflow]
+    # Your iFlow API key (get from: https://platform.iflow.cn/profile?tab=apiKey)
+    apiKey = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    
+    # iFlow model to use (glm-4.6, kimi-k2, qwen3-coder-plus, qwen3-max, qwen3-vl-plus, deepseek-v3.2, tstars2.0, iflow-rome-30ba3b)
+    model = "glm-4.6"
 
 # DeepSeek API Configuration
 [deepseek]
