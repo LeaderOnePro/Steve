@@ -79,7 +79,8 @@ public class AsyncGeminiClient implements AsyncLLMClient {
         this.temperature = temperature;
 
         this.httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(30))
+            .version(HttpClient.Version.HTTP_2)
+            .connectTimeout(Duration.ofSeconds(10))
             .build();
 
         LOGGER.info("AsyncGeminiClient initialized (model: {}, maxTokens: {}, temperature: {})",

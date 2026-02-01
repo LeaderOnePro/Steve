@@ -61,7 +61,19 @@ public class AsyncOpenAIClient implements AsyncLLMClient {
     private final double temperature;
 
     /**
-     * Constructs an AsyncOpenAIClient.
+     * Constructs an AsyncOpenAIClient using values from SteveConfig.
+     */
+    public AsyncOpenAIClient() {
+        this(
+            com.steve.ai.config.SteveConfig.OPENAI_API_KEY.get(),
+            com.steve.ai.config.SteveConfig.OPENAI_MODEL.get(),
+            com.steve.ai.config.SteveConfig.MAX_TOKENS.get(),
+            com.steve.ai.config.SteveConfig.TEMPERATURE.get()
+        );
+    }
+
+    /**
+     * Constructs an AsyncOpenAIClient with explicit parameters.
      *
      * @param apiKey      OpenAI API key (required)
      * @param model       Model to use (e.g., "gpt-4o", "gpt-3.5-turbo")
@@ -80,6 +92,7 @@ public class AsyncOpenAIClient implements AsyncLLMClient {
         this.temperature = temperature;
 
         this.httpClient = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_2)
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
