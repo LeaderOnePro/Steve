@@ -1,5 +1,6 @@
 package com.steve.ai.action.actions;
 
+import com.steve.ai.SteveMod;
 import com.steve.ai.action.ActionResult;
 import com.steve.ai.action.Task;
 import com.steve.ai.entity.SteveEntity;
@@ -83,7 +84,7 @@ public class PlaceBlockAction extends BaseAction {
         
         ResourceLocation resourceLocation = ResourceLocation.tryParse(blockName);
         if (resourceLocation == null) {
-            com.steve.ai.SteveMod.LOGGER.error("Invalid ResourceLocation for block: {}", blockName);
+            SteveMod.LOGGER.error("Invalid ResourceLocation for block: {}", blockName);
             return Blocks.AIR;
         }
         return BuiltInRegistries.BLOCK.get(resourceLocation);
