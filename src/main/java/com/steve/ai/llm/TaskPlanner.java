@@ -24,6 +24,7 @@ public class TaskPlanner {
     private final AsyncLLMClient asyncOpenAIClient;
     private final AsyncLLMClient asyncGroqClient;
     private final AsyncLLMClient asyncGeminiClient;
+    private final AsyncLLMClient asyncDeepSeekClient;
     private final LLMCache llmCache;
     private final LLMFallbackHandler fallbackHandler;
 
@@ -33,6 +34,16 @@ public class TaskPlanner {
         this.geminiClient = new GeminiClient();
         this.groqClient = new GroqClient();
         this.deepSeekClient = new DeepSeekClient();
+
+        // DeepSeek async client can be initialized without Caffeine/Resilience4j
+        AsyncLLMClient tempAsyncDeepSeek = null;
+        try {
+            tempAsyncDeepSeek = new AsyncDeepSeekClient();
+            SteveMod.LOGGER.info("AsyncDeepSeekClient initialized successfully");
+        } catch (Exception e) {
+            SteveMod.LOGGER.warn("Failed to initialize AsyncDeepSeekClient: {}", e.getMessage());
+        }
+        this.asyncDeepSeekClient = tempAsyncDeepSeek;
 
         // Initialize async infrastructure (may fail if Caffeine/Resilience4j not available in runtime)
         LLMCache tempCache = null;
@@ -149,30 +160,16 @@ public class TaskPlanner {
             SteveMod.LOGGER.info("[Async] Requesting AI plan for Steve '{}' using {}: {}",
                 steve.getSteveName(), provider, command);
 
-            // DeepSeek doesn't have async client yet, use sync API wrapped in CompletableFuture
-            if ("deepseek".equals(provider)) {
-                return CompletableFuture.supplyAsync(() -> {
-                    String response = deepSeekClient.sendRequest(systemPrompt, userPrompt);
-                    if (response == null || response.isEmpty()) {
-                        SteveMod.LOGGER.error("[DeepSeek] Empty response from API");
-                        return null;
-                    }
-                    ResponseParser.ParsedResponse parsed = ResponseParser.parseAIResponse(response);
-                    if (parsed != null) {
-                        SteveMod.LOGGER.info("[DeepSeek] Plan received: {} ({} tasks)",
-                            parsed.getPlan(), parsed.getTasks().size());
-                    }
-                    return parsed;
-                }).exceptionally(throwable -> {
-                    SteveMod.LOGGER.error("[DeepSeek] Error planning tasks: {}", throwable.getMessage());
-                    return null;
-                });
-            }
 
-            // Build params map
+            // Build params map with provider-specific model
+            String modelForProvider = switch (provider) {
+                case "deepseek" -> SteveConfig.DEEPSEEK_MODEL.get();
+                default -> SteveConfig.OPENAI_MODEL.get();
+            };
+            
             Map<String, Object> params = Map.of(
                 "systemPrompt", systemPrompt,
-                "model", SteveConfig.OPENAI_MODEL.get(),
+                "model", modelForProvider,
                 "maxTokens", SteveConfig.MAX_TOKENS.get(),
                 "temperature", SteveConfig.TEMPERATURE.get()
             );
@@ -218,7 +215,7 @@ public class TaskPlanner {
     /**
      * Returns the appropriate async client based on provider config.
      *
-     * @param provider Provider name ("openai", "groq", "gemini")
+     * @param provider Provider name ("openai", "groq", "gemini", "deepseek")
      * @return Resilient async client
      */
     private AsyncLLMClient getAsyncClient(String provider) {
@@ -226,6 +223,7 @@ public class TaskPlanner {
             case "openai" -> asyncOpenAIClient;
             case "gemini" -> asyncGeminiClient;
             case "groq" -> asyncGroqClient;
+            case "deepseek" -> asyncDeepSeekClient;
             default -> {
                 SteveMod.LOGGER.warn("[Async] Unknown provider '{}', using Groq", provider);
                 yield asyncGroqClient;
