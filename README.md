@@ -1,4 +1,7 @@
-# Steve AI - Autonomous AI Agent for Minecraft
+# Steve AI - Autonomous AI Agent for Minecraft (v1.0.2)
+
+**Author:** LeaderOnePro  
+**Forked from:** [YuvDwi/Steve](https://github.com/YuvDwi/Steve)
 
 We built Cursor for Minecraft. Instead of AI that helps you write code, you get AI agents that actually play the game with you.
 
@@ -24,7 +27,7 @@ The agents aren't following predefined scripts. They're operating off natural la
 **You need:**
 - Minecraft 1.20.1 with Forge
 - Java 17
-- An OpenAI API key (or Groq/Gemini if you prefer)
+- An LLM API key (OpenAI GPT-5, Gemini 3, Groq, or DeepSeek)
 
 **Installation:**
 1. Download the JAR from releases
@@ -33,13 +36,16 @@ The agents aren't following predefined scripts. They're operating off natural la
 4. Copy `config/steve-common.toml.example` to `config/steve-common.toml`
 5. Add your API key to the config
 
-**Config example:**
+**Config example (`config/steve-common.toml`):**
 ```toml
-[openai]
-apiKey = "your-api-key-here"
-model = "gpt-3.5-turbo"
-maxTokens = 1000
+[ai]
+provider = "groq"
+maxTokens = 8000
 temperature = 0.7
+
+[groq]
+apiKey = "your-groq-api-key-here"
+model = "llama-3.1-8b-instant"
 ```
 
 Then spawn a Steve with `/steve spawn Bob` and press K to start giving commands.
@@ -77,7 +83,8 @@ Each Steve runs an autonomous agent loop that processes natural language command
 ### Core Components
 
 **LLM Integration** (`com.steve.ai.llm`)
-- **GeminiClient, GroqClient, OpenAIClient**: Pluggable LLM providers for agent reasoning
+- **Multi-Provider Support**: Pluggable clients for OpenAI, Groq, Gemini, and DeepSeek.
+- **Resilient Clients**: Async implementations with caching, retries, and circuit breaker patterns.
 - **TaskPlanner**: Orchestrates LLM calls with context (conversation history, world state, Steve capabilities)
 - **PromptBuilder**: Constructs prompts with available actions, examples, and formatting instructions
 - **ResponseParser**: Extracts structured action sequences from LLM responses
@@ -149,7 +156,7 @@ Custom overlay GUI activated with K key. Uses Minecraft's Screen class with cust
 Standard Gradle workflow:
 
 ```bash
-git clone https://github.com/YuvDwi/Steve.git
+git clone https://github.com/LeaderOnePro/Steve.git
 cd Steve
 ./gradlew build
 ```
@@ -225,33 +232,36 @@ We welcome contributions! Here's how to get started:
 
 ## Configuration
 
-Edit `config/steve-common.toml`:
+Edit `config/steve-common.toml`. Each provider now has its own section for better organization.
 
 ```toml
-[llm]
-provider = "groq"  # Options: openai, groq, gemini
+[ai]
+provider = "groq"  # Options: openai, groq, gemini, deepseek
+maxTokens = 8000
+temperature = 0.7
 
 [openai]
 apiKey = "sk-..."
-model = "gpt-3.5-turbo"
-maxTokens = 1000
-temperature = 0.7
+model = "gpt-5-mini-2025-08-07"
 
 [groq]
 apiKey = "gsk_..."
-model = "llama3-70b-8192"
-maxTokens = 1000
+model = "llama-3.1-8b-instant"
 
 [gemini]
-apiKey = "AI..."
-model = "gemini-1.5-flash"
-maxTokens = 1000
+apiKey = "AIza..."
+model = "gemini-3-flash-preview"
+
+[deepseek]
+apiKey = "sk-..."
+model = "deepseek-chat"
 ```
 
 **Performance Tips:**
-- Use Groq for fastest inference (recommended for gameplay)
-- GPT-4 for better planning but higher latency
-- Lower temperature (0.5-0.7) for more deterministic actions
+- **Groq**: Fastest inference, best for smooth real-time reactions.
+- **Gemini 3 / GPT-5**: Excellent for complex multi-step planning.
+- **DeepSeek**: Great balance of quality and cost-efficiency.
+- **Temperature**: Recommended 0.5-0.7 for consistent task execution.
 
 ## Known Issues
 
@@ -295,4 +305,4 @@ MIT
 
 ## Issues
 
-Found a bug? Open an issue: https://github.com/YuvDwi/Steve/issues
+Found a bug? Open an issue: https://github.com/LeaderOnePro/Steve/issues
