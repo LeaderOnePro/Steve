@@ -1,5 +1,6 @@
 package com.steve.ai.action.actions;
 
+import com.steve.ai.SteveMod;
 import com.steve.ai.action.ActionResult;
 import com.steve.ai.action.Task;
 import com.steve.ai.entity.SteveEntity;
@@ -74,11 +75,18 @@ public class PlaceBlockAction extends BaseAction {
     }
 
     private Block parseBlock(String blockName) {
+        if (blockName == null || blockName.isEmpty()) return Blocks.AIR;
+        
         blockName = blockName.toLowerCase().replace(" ", "_");
         if (!blockName.contains(":")) {
             blockName = "minecraft:" + blockName;
         }
-        ResourceLocation resourceLocation = new ResourceLocation(blockName);
+        
+        ResourceLocation resourceLocation = ResourceLocation.tryParse(blockName);
+        if (resourceLocation == null) {
+            SteveMod.LOGGER.error("Invalid ResourceLocation for block: {}", blockName);
+            return Blocks.AIR;
+        }
         return BuiltInRegistries.BLOCK.get(resourceLocation);
     }
 }

@@ -45,7 +45,7 @@ temperature = 0.7
 
 [longcat]
 apiKey = "ak_xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-model = "LongCat-Flash-Chat"
+model = "LongCat-Flash-Thinking-2601"
 ```
 
 Then spawn a Steve with `/steve spawn Bob` and press K to start giving commands.
@@ -242,7 +242,7 @@ temperature = 0.7
 
 [longcat]
 apiKey = "ak_..."
-model = "LongCat-Flash-Chat"
+model = "LongCat-Flash-Thinking-2601"
 
 [deepseek]
 apiKey = "sk-..."

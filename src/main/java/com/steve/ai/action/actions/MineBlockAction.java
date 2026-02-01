@@ -359,6 +359,8 @@ public class MineBlockAction extends BaseAction {
     }
 
     private Block parseBlock(String blockName) {
+        if (blockName == null || blockName.isEmpty()) return Blocks.AIR;
+        
         blockName = blockName.toLowerCase().replace(" ", "_");
         
         Map<String, String> resourceToOre = new HashMap<>() {{
@@ -380,7 +382,11 @@ public class MineBlockAction extends BaseAction {
             blockName = "minecraft:" + blockName;
         }
         
-        ResourceLocation resourceLocation = new ResourceLocation(blockName);
+        ResourceLocation resourceLocation = ResourceLocation.tryParse(blockName);
+        if (resourceLocation == null) {
+            SteveMod.LOGGER.error("Invalid ResourceLocation for block: {}", blockName);
+            return Blocks.AIR;
+        }
         return BuiltInRegistries.BLOCK.get(resourceLocation);
     }
 }
