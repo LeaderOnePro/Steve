@@ -25,7 +25,9 @@ public class OllamaClient {
     private final String host;
 
     public OllamaClient() {
-        this.host = SteveConfig.OLLAMA_HOST.get();
+        String configHost = SteveConfig.OLLAMA_HOST.get();
+        // Normalize host: remove trailing slash to prevent double slashes in URL
+        this.host = configHost.endsWith("/") ? configHost.substring(0, configHost.length() - 1) : configHost;
         this.client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(30))
             .build();
@@ -37,7 +39,8 @@ public class OllamaClient {
         
         SteveMod.LOGGER.info("[Ollama] Sending request to {} with model: {}", apiUrl, model);
         
-        JsonObject requestBody = buildRequestBody(systemPrompt, userPrompt);
+        long startTime = System.currentTimeMillis();
+        JsonObject requestBody = buildRequestBody(systemPrompt, userPrompt, model);
 
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(apiUrl))
@@ -51,9 +54,10 @@ public class OllamaClient {
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
                 if (response.statusCode() == 200) {
+                    long latency = System.currentTimeMillis() - startTime;
                     String result = parseResponse(response.body());
                     SteveMod.LOGGER.info("[Ollama] Response received ({}ms, {} chars)", 
-                        System.currentTimeMillis() - System.currentTimeMillis(), 
+                        latency, 
                         result != null ? result.length() : 0);
                     return result;
                 }
@@ -93,9 +97,8 @@ public class OllamaClient {
         return null;
     }
 
-    private JsonObject buildRequestBody(String systemPrompt, String userPrompt) {
+    private JsonObject buildRequestBody(String systemPrompt, String userPrompt, String model) {
         JsonObject body = new JsonObject();
-        String model = SteveConfig.OLLAMA_MODEL.get();
         body.addProperty("model", model);
         body.addProperty("stream", false); // Disable streaming for simpler response handling
 

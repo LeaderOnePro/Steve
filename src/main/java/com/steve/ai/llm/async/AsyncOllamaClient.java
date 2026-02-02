@@ -31,7 +31,9 @@ public class AsyncOllamaClient implements AsyncLLMClient {
     private final double temperature;
 
     public AsyncOllamaClient(String host, String model, int maxTokens, double temperature) {
-        this.host = host != null && !host.isEmpty() ? host : "http://localhost:11434";
+        // Normalize host: remove trailing slash to prevent double slashes in URL
+        String hostValue = (host != null && !host.isEmpty()) ? host : "http://localhost:11434";
+        this.host = hostValue.endsWith("/") ? hostValue.substring(0, hostValue.length() - 1) : hostValue;
         this.model = model;
         this.maxTokens = maxTokens;
         this.temperature = temperature;
@@ -73,8 +75,8 @@ public class AsyncOllamaClient implements AsyncLLMClient {
     private String buildRequestBody(String prompt, Map<String, Object> params) {
         JsonObject body = new JsonObject();
         String activeModel = (String) params.getOrDefault("model", this.model);
-        double activeTemp = (Double) params.getOrDefault("temperature", this.temperature);
-        int activeMaxTokens = (Integer) params.getOrDefault("maxTokens", this.maxTokens);
+        double activeTemp = (double) params.getOrDefault("temperature", this.temperature);
+        int activeMaxTokens = (int) params.getOrDefault("maxTokens", this.maxTokens);
 
         body.addProperty("model", activeModel);
         body.addProperty("stream", false); // Disable streaming
@@ -135,7 +137,19 @@ public class AsyncOllamaClient implements AsyncLLMClient {
 
     @Override
     public boolean isHealthy() {
-        return true; 
+        // Try a quick HEAD request to check if Ollama is running
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(host))
+                .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                .timeout(Duration.ofSeconds(2))
+                .build();
+            HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+            return response.statusCode() == 200;
+        } catch (Exception e) {
+            LOGGER.debug("[ollama] Health check failed: {}", e.getMessage());
+            return false;
+        }
     }
 
     private LLMException.ErrorType mapStatusCodeToErrorType(int statusCode) {
