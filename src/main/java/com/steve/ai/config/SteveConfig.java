@@ -33,6 +33,10 @@ public class SteveConfig {
     // Groq
     public static final ForgeConfigSpec.ConfigValue<String> GROQ_API_KEY;
     public static final ForgeConfigSpec.ConfigValue<String> GROQ_MODEL;
+
+    // Ollama (Local)
+    public static final ForgeConfigSpec.ConfigValue<String> OLLAMA_HOST;
+    public static final ForgeConfigSpec.ConfigValue<String> OLLAMA_MODEL;
     
     // Behavior
     public static final ForgeConfigSpec.IntValue ACTION_TICK_DELAY;
@@ -45,7 +49,7 @@ public class SteveConfig {
         builder.comment("AI API Configuration").push("ai");
         
         AI_PROVIDER = builder
-            .comment("AI provider to use: 'longcat', 'iflow', 'deepseek', 'openai', 'gemini', or 'groq' (FASTEST, FREE)")
+            .comment("AI provider to use: 'ollama', 'longcat', 'iflow', 'deepseek', 'openai', 'gemini', or 'groq' (FASTEST, FREE)")
             .define("provider", "longcat");
         
         MAX_TOKENS = builder
@@ -128,6 +132,18 @@ public class SteveConfig {
         GROQ_MODEL = builder
             .comment("Groq model to use (llama-3.1-8b-instant, llama-3.1-70b-versatile, mixtral-8x7b-32768)")
             .define("model", "llama-3.1-8b-instant");
+        
+        builder.pop();
+
+        builder.comment("Ollama Local LLM Configuration (runs locally, no API key needed)").push("ollama");
+        
+        OLLAMA_HOST = builder
+            .comment("Ollama server address (default: http://localhost:11434)")
+            .define("host", "http://localhost:11434");
+        
+        OLLAMA_MODEL = builder
+            .comment("Ollama model to use (qwen3:4b, gpt-oss:latest, glm-4.7-flash)")
+            .define("model", "qwen3:4b");
         
         builder.pop();
 
