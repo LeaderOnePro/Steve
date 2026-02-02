@@ -1,6 +1,6 @@
 # AI Provider Configuration
 [ai]
-    # AI provider to use: 'longcat', 'iflow', 'deepseek', 'openai', 'gemini', or 'groq'
+    # AI provider to use: 'ollama', 'longcat', 'iflow', 'deepseek', 'openai', 'gemini', or 'groq'
     provider = "longcat"
     
     # Maximum tokens per API request (applies to all LLM providers)
@@ -61,6 +61,14 @@
     
     # Groq model to use (llama-3.1-8b-instant, llama-3.1-70b-versatile, mixtral-8x7b-32768)
     model = "llama-3.1-8b-instant"
+
+# Ollama Local LLM Configuration (runs locally, no API key needed)
+[ollama]
+    # Ollama server address (default: http://localhost:11434)
+    host = "http://localhost:11434"
+    
+    # Ollama model to use (qwen3:4b, gpt-oss:latest, glm-4.7-flash)
+    model = "qwen3:4b"
 
 # Steve Behavior Configuration
 [behavior]
