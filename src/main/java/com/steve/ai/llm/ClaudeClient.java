@@ -71,7 +71,7 @@ public class ClaudeClient {
 
                 if (response.statusCode() == 429 || response.statusCode() >= 500 || response.statusCode() == 529) {
                     if (attempt < MAX_RETRIES - 1) {
-                        long delayMs = (long) (INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt));
+                        int delayMs = (int) (INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt));
                         SteveMod.LOGGER.warn("Claude API failed ({}), retrying in {}ms", response.statusCode(), delayMs);
                         try {
                             Thread.sleep(delayMs);
@@ -88,7 +88,7 @@ public class ClaudeClient {
                 return null;
             } catch (Exception e) {
                 if (attempt < MAX_RETRIES - 1) {
-                    long delayMs = (long) (INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt));
+                    int delayMs = (int) (INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt));
                     SteveMod.LOGGER.warn("Error communicating with Claude API, retrying in {}ms", delayMs, e);
                     try {
                         Thread.sleep(delayMs);
@@ -133,13 +133,16 @@ public class ClaudeClient {
             JsonArray content = json.getAsJsonArray("content");
             if (content != null && !content.isEmpty()) {
                 JsonObject firstContent = content.get(0).getAsJsonObject();
-                if ("text".equals(firstContent.get("type").getAsString())) {
-                    return firstContent.get("text").getAsString();
+                // Null-safe checks for type and text fields
+                if (firstContent.has("type") && "text".equals(firstContent.get("type").getAsString())) {
+                    if (firstContent.has("text")) {
+                        return firstContent.get("text").getAsString();
+                    }
                 }
             }
             SteveMod.LOGGER.error("Claude response missing text content");
             return null;
-        } catch (com.google.gson.JsonParseException | IllegalStateException | NullPointerException e) {
+        } catch (com.google.gson.JsonParseException | IllegalStateException e) {
             SteveMod.LOGGER.error("Error parsing Claude response", e);
             return null;
         }

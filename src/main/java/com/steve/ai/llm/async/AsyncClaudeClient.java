@@ -136,11 +136,20 @@ public class AsyncClaudeClient implements AsyncLLMClient {
                 );
             }
 
-            // Extract text from first content block
+            // Extract text from first content block with null-safe checks
             JsonObject firstContent = contentArray.get(0).getAsJsonObject();
             String content;
-            if ("text".equals(firstContent.get("type").getAsString())) {
-                content = firstContent.get("text").getAsString();
+            if (firstContent.has("type") && "text".equals(firstContent.get("type").getAsString())) {
+                if (firstContent.has("text")) {
+                    content = firstContent.get("text").getAsString();
+                } else {
+                    throw new LLMException(
+                        "Claude response missing 'text' field in content block",
+                        LLMException.ErrorType.INVALID_RESPONSE,
+                        PROVIDER_ID,
+                        false
+                    );
+                }
             } else {
                 throw new LLMException(
                     "Claude response first content block is not text type",
