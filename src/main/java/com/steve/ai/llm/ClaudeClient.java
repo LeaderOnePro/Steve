@@ -68,7 +68,8 @@ public class ClaudeClient {
                     return result;
                 }
 
-                if (response.statusCode() >= 500 || response.statusCode() == 529) {
+
+                if (response.statusCode() == 429 || response.statusCode() >= 500 || response.statusCode() == 529) {
                     if (attempt < MAX_RETRIES - 1) {
                         long delayMs = (long) (INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt));
                         SteveMod.LOGGER.warn("Claude API failed ({}), retrying in {}ms", response.statusCode(), delayMs);
