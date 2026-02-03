@@ -1,6 +1,6 @@
 # AI Provider Configuration
 [ai]
-    # AI provider to use: 'ollama', 'longcat', 'iflow', 'deepseek', 'openai', 'gemini', or 'groq'
+    # AI provider to use: 'ollama', 'longcat', 'iflow', 'deepseek', 'openai', 'claude', 'gemini', or 'groq'
     provider = "longcat"
     
     # Maximum tokens per API request (applies to all LLM providers)
@@ -43,6 +43,15 @@
     
     # OpenAI model to use (gpt-5.2, gpt-5.2-codex, gpt-5-mini-2025-08-07, gpt-5-nano-2025-08-07)
     model = "gpt-5-mini-2025-08-07"
+
+# Anthropic Claude API Configuration
+[claude]
+    # Your Claude API key
+    # Get your API key from: https://console.anthropic.com/settings/keys
+    apiKey = "sk-ant-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    
+    # Claude model to use (claude-opus-4-5, claude-sonnet-4-5, claude-haiku-4-5)
+    model = "claude-opus-4-5"
 
 # Google Gemini API Configuration
 [gemini]

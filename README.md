@@ -1,4 +1,4 @@
-# Steve AI - Autonomous AI Agent for Minecraft (v1.0.5)
+# Steve AI - Autonomous AI Agent for Minecraft (v1.0.6)
 
 **Author:** LeaderOnePro  
 **Forked from:** [YuvDwi/Steve](https://github.com/YuvDwi/Steve)
@@ -236,7 +236,7 @@ Edit `config/steve-common.toml`. Each provider now has its own section for bette
 
 ```toml
 [ai]
-provider = "longcat"  # Options: ollama, longcat, iflow, deepseek, openai, gemini, groq
+provider = "longcat"  # Options: ollama, longcat, iflow, deepseek, openai, claude, gemini, groq
 maxTokens = 8000
 temperature = 0.7
 
@@ -259,6 +259,10 @@ model = "deepseek-chat"
 [openai]
 apiKey = "sk-..."
 model = "gpt-5-mini-2025-08-07"
+
+[claude]
+apiKey = "sk-ant-..."
+model = "claude-opus-4-5"
 
 [gemini]
 apiKey = "AIza..."

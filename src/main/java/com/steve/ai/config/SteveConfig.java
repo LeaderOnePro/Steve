@@ -26,6 +26,10 @@ public class SteveConfig {
     public static final ForgeConfigSpec.ConfigValue<String> OPENAI_API_KEY;
     public static final ForgeConfigSpec.ConfigValue<String> OPENAI_MODEL;
 
+    // Claude (Anthropic)
+    public static final ForgeConfigSpec.ConfigValue<String> CLAUDE_API_KEY;
+    public static final ForgeConfigSpec.ConfigValue<String> CLAUDE_MODEL;
+
     // Gemini
     public static final ForgeConfigSpec.ConfigValue<String> GEMINI_API_KEY;
     public static final ForgeConfigSpec.ConfigValue<String> GEMINI_MODEL;
@@ -49,7 +53,7 @@ public class SteveConfig {
         builder.comment("AI API Configuration").push("ai");
         
         AI_PROVIDER = builder
-            .comment("AI provider to use: 'ollama', 'longcat', 'iflow', 'deepseek', 'openai', 'gemini', or 'groq' (FASTEST, FREE)")
+            .comment("AI provider to use: 'ollama', 'longcat', 'iflow', 'deepseek', 'openai', 'claude', 'gemini', or 'groq' (FASTEST, FREE)")
             .define("provider", "longcat");
         
         MAX_TOKENS = builder
@@ -108,6 +112,18 @@ public class SteveConfig {
         OPENAI_MODEL = builder
             .comment("OpenAI model to use (gpt-5.2, gpt-5.2-codex, gpt-5-mini-2025-08-07, gpt-5-nano-2025-08-07)")
             .define("model", "gpt-5-mini-2025-08-07");
+        
+        builder.pop();
+
+        builder.comment("Anthropic Claude API Configuration").push("claude");
+        
+        CLAUDE_API_KEY = builder
+            .comment("Your Claude API key (get from: https://console.anthropic.com/settings/keys)")
+            .define("apiKey", "");
+        
+        CLAUDE_MODEL = builder
+            .comment("Claude model to use (claude-opus-4-5, claude-sonnet-4-5, claude-haiku-4-5)")
+            .define("model", "claude-opus-4-5");
         
         builder.pop();
 
