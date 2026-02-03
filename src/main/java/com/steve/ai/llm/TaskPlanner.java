@@ -20,6 +20,7 @@ public class TaskPlanner {
     private final IFlowClient iflowClient;
     private final DeepSeekClient deepSeekClient;
     private final OpenAIClient openAIClient;
+    private final ClaudeClient claudeClient;
     private final GeminiClient geminiClient;
     private final GroqClient groqClient;
 
@@ -29,6 +30,7 @@ public class TaskPlanner {
     private final AsyncLLMClient asyncIFlowClient;
     private final AsyncLLMClient asyncDeepSeekClient;
     private final AsyncLLMClient asyncOpenAIClient;
+    private final AsyncLLMClient asyncClaudeClient;
     private final AsyncLLMClient asyncGeminiClient;
     private final AsyncLLMClient asyncGroqClient;
     private final LLMCache llmCache;
@@ -41,6 +43,7 @@ public class TaskPlanner {
         this.iflowClient = new IFlowClient();
         this.deepSeekClient = new DeepSeekClient();
         this.openAIClient = new OpenAIClient();
+        this.claudeClient = new ClaudeClient();
         this.geminiClient = new GeminiClient();
         this.groqClient = new GroqClient();
 
@@ -52,6 +55,7 @@ public class TaskPlanner {
         AsyncLLMClient tempAsyncIFlow = null;
         AsyncLLMClient tempAsyncDeepSeek = null;
         AsyncLLMClient tempAsyncOpenAI = null;
+        AsyncLLMClient tempAsyncClaude = null;
         AsyncLLMClient tempAsyncGemini = null;
         AsyncLLMClient tempAsyncGroq = null;
 
@@ -99,6 +103,13 @@ public class TaskPlanner {
                 temperature
             );
 
+            AsyncLLMClient baseClaude = new AsyncClaudeClient(
+                SteveConfig.CLAUDE_API_KEY.get(), 
+                SteveConfig.CLAUDE_MODEL.get(), 
+                maxTokens, 
+                temperature
+            );
+
             AsyncLLMClient baseGemini = new AsyncGeminiClient(
                 SteveConfig.GEMINI_API_KEY.get(), 
                 SteveConfig.GEMINI_MODEL.get(), 
@@ -119,6 +130,7 @@ public class TaskPlanner {
             tempAsyncIFlow = new ResilientLLMClient(baseIFlow, tempCache, tempFallback);
             tempAsyncDeepSeek = new ResilientLLMClient(baseDeepSeek, tempCache, tempFallback);
             tempAsyncOpenAI = new ResilientLLMClient(baseOpenAI, tempCache, tempFallback);
+            tempAsyncClaude = new ResilientLLMClient(baseClaude, tempCache, tempFallback);
             tempAsyncGemini = new ResilientLLMClient(baseGemini, tempCache, tempFallback);
             tempAsyncGroq = new ResilientLLMClient(baseGroq, tempCache, tempFallback);
 
@@ -134,6 +146,7 @@ public class TaskPlanner {
         this.asyncIFlowClient = tempAsyncIFlow;
         this.asyncDeepSeekClient = tempAsyncDeepSeek;
         this.asyncOpenAIClient = tempAsyncOpenAI;
+        this.asyncClaudeClient = tempAsyncClaude;
         this.asyncGeminiClient = tempAsyncGemini;
         this.asyncGroqClient = tempAsyncGroq;
     }
@@ -176,6 +189,7 @@ public class TaskPlanner {
             case "iflow" -> iflowClient.sendRequest(systemPrompt, userPrompt);
             case "deepseek" -> deepSeekClient.sendRequest(systemPrompt, userPrompt);
             case "openai" -> openAIClient.sendRequest(systemPrompt, userPrompt);
+            case "claude" -> claudeClient.sendRequest(systemPrompt, userPrompt);
             case "gemini" -> geminiClient.sendRequest(systemPrompt, userPrompt);
             case "groq" -> groqClient.sendRequest(systemPrompt, userPrompt);
             default -> {
@@ -225,6 +239,7 @@ public class TaskPlanner {
                 case "iflow" -> SteveConfig.IFLOW_MODEL.get();
                 case "deepseek" -> SteveConfig.DEEPSEEK_MODEL.get();
                 case "openai" -> SteveConfig.OPENAI_MODEL.get();
+                case "claude" -> SteveConfig.CLAUDE_MODEL.get();
                 case "gemini" -> SteveConfig.GEMINI_MODEL.get();
                 case "groq" -> SteveConfig.GROQ_MODEL.get();
                 default -> SteveConfig.LONGCAT_MODEL.get();
@@ -310,6 +325,7 @@ public class TaskPlanner {
             case "iflow" -> asyncIFlowClient;
             case "deepseek" -> asyncDeepSeekClient;
             case "openai" -> asyncOpenAIClient;
+            case "claude" -> asyncClaudeClient;
             case "gemini" -> asyncGeminiClient;
             case "groq" -> asyncGroqClient;
             default -> {
@@ -327,6 +343,7 @@ public class TaskPlanner {
             if (asyncIFlowClient != null) return asyncIFlowClient;
             if (asyncDeepSeekClient != null) return asyncDeepSeekClient;
             if (asyncOpenAIClient != null) return asyncOpenAIClient;
+            if (asyncClaudeClient != null) return asyncClaudeClient;
             if (asyncGeminiClient != null) return asyncGeminiClient;
             if (asyncGroqClient != null) return asyncGroqClient;
         }
