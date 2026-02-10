@@ -73,7 +73,7 @@ public class SteveConfig {
             .define("apiKey", "");
         
         LONGCAT_MODEL = builder
-            .comment("LongCat model to use (LongCat-Flash-Chat, LongCat-Flash-Thinking, LongCat-Flash-Thinking-2601)")
+            .comment("LongCat model to use (LongCat-Flash-Chat, LongCat-Flash-Thinking, LongCat-Flash-Thinking-2601, LongCat-Flash-Lite)")
             .define("model", "LongCat-Flash-Thinking-2601");
         
         builder.pop();
