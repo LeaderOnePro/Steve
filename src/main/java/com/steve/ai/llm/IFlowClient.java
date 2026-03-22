@@ -16,7 +16,10 @@ import java.time.Duration;
  * Client for iFlow API - OpenAI-compatible
  * Endpoint: https://apis.iflow.cn/v1/chat/completions
  * API Keys: https://platform.iflow.cn/profile?tab=apiKey
+ *
+ * @deprecated iFlow API will be officially shut down on April 17, 2026 (Beijing Time).
  */
+@Deprecated
 public class IFlowClient {
     private static final String IFLOW_API_URL = "https://apis.iflow.cn/v1/chat/completions";
     private static final int MAX_RETRIES = 3;

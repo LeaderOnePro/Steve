@@ -17,22 +17,26 @@ public class TaskPlanner {
     // Legacy synchronous clients (for backward compatibility)
     private final OllamaClient ollamaClient;
     private final LongCatClient longCatClient;
-    private final IFlowClient iflowClient;
     private final DeepSeekClient deepSeekClient;
     private final OpenAIClient openAIClient;
     private final ClaudeClient claudeClient;
     private final GeminiClient geminiClient;
     private final GroqClient groqClient;
+    /** @deprecated iFlow API will be shut down on April 17, 2026 (Beijing Time) */
+    @Deprecated
+    private final IFlowClient iflowClient;
 
     // NEW: Async resilient clients
     private final AsyncLLMClient asyncOllamaClient;
     private final AsyncLLMClient asyncLongCatClient;
-    private final AsyncLLMClient asyncIFlowClient;
     private final AsyncLLMClient asyncDeepSeekClient;
     private final AsyncLLMClient asyncOpenAIClient;
     private final AsyncLLMClient asyncClaudeClient;
     private final AsyncLLMClient asyncGeminiClient;
     private final AsyncLLMClient asyncGroqClient;
+    /** @deprecated iFlow API will be shut down on April 17, 2026 (Beijing Time) */
+    @Deprecated
+    private final AsyncLLMClient asyncIFlowClient;
     private final LLMCache llmCache;
     private final LLMFallbackHandler fallbackHandler;
 
@@ -40,24 +44,24 @@ public class TaskPlanner {
         // Legacy clients (always initialize - these work without external dependencies)
         this.ollamaClient = new OllamaClient();
         this.longCatClient = new LongCatClient();
-        this.iflowClient = new IFlowClient();
         this.deepSeekClient = new DeepSeekClient();
         this.openAIClient = new OpenAIClient();
         this.claudeClient = new ClaudeClient();
         this.geminiClient = new GeminiClient();
         this.groqClient = new GroqClient();
+        this.iflowClient = new IFlowClient(); // Deprecated: iFlow shutting down April 17, 2026
 
         // Initialize async infrastructure (may fail if Caffeine/Resilience4j not available in runtime)
         LLMCache tempCache = null;
         LLMFallbackHandler tempFallback = null;
         AsyncLLMClient tempAsyncOllama = null;
         AsyncLLMClient tempAsyncLongCat = null;
-        AsyncLLMClient tempAsyncIFlow = null;
         AsyncLLMClient tempAsyncDeepSeek = null;
         AsyncLLMClient tempAsyncOpenAI = null;
         AsyncLLMClient tempAsyncClaude = null;
         AsyncLLMClient tempAsyncGemini = null;
         AsyncLLMClient tempAsyncGroq = null;
+        AsyncLLMClient tempAsyncIFlow = null;
 
         try {
             tempCache = new LLMCache();
@@ -78,13 +82,6 @@ public class TaskPlanner {
             AsyncLLMClient baseLongCat = new AsyncLongCatClient(
                 SteveConfig.LONGCAT_API_KEY.get(),
                 SteveConfig.LONGCAT_MODEL.get(),
-                maxTokens,
-                temperature
-            );
-
-            AsyncLLMClient baseIFlow = new AsyncIFlowClient(
-                SteveConfig.IFLOW_API_KEY.get(),
-                SteveConfig.IFLOW_MODEL.get(),
                 maxTokens,
                 temperature
             );
@@ -127,12 +124,30 @@ public class TaskPlanner {
             // Wrap with resilience patterns (caching, retries, circuit breaker)
             tempAsyncOllama = new ResilientLLMClient(baseOllama, tempCache, tempFallback);
             tempAsyncLongCat = new ResilientLLMClient(baseLongCat, tempCache, tempFallback);
-            tempAsyncIFlow = new ResilientLLMClient(baseIFlow, tempCache, tempFallback);
             tempAsyncDeepSeek = new ResilientLLMClient(baseDeepSeek, tempCache, tempFallback);
             tempAsyncOpenAI = new ResilientLLMClient(baseOpenAI, tempCache, tempFallback);
             tempAsyncClaude = new ResilientLLMClient(baseClaude, tempCache, tempFallback);
             tempAsyncGemini = new ResilientLLMClient(baseGemini, tempCache, tempFallback);
             tempAsyncGroq = new ResilientLLMClient(baseGroq, tempCache, tempFallback);
+
+            // Deprecated: iFlow API will be shut down on April 17, 2026 (Beijing Time)
+            // Isolated initialization to prevent iFlow misconfiguration from disabling all async clients
+            try {
+                String iflowKey = SteveConfig.IFLOW_API_KEY.get();
+                if (iflowKey != null && !iflowKey.isEmpty()) {
+                    AsyncLLMClient baseIFlow = new AsyncIFlowClient(
+                        iflowKey,
+                        SteveConfig.IFLOW_MODEL.get(),
+                        maxTokens,
+                        temperature
+                    );
+                    tempAsyncIFlow = new ResilientLLMClient(baseIFlow, tempCache, tempFallback);
+                } else {
+                    SteveMod.LOGGER.debug("iFlow API key not configured, skipping iFlow async client initialization");
+                }
+            } catch (Exception e) {
+                SteveMod.LOGGER.warn("Failed to initialize iFlow async client (deprecated provider): {}", e.getMessage());
+            }
 
             SteveMod.LOGGER.info("TaskPlanner initialized with async resilient clients");
         } catch (NoClassDefFoundError | Exception e) {
@@ -143,12 +158,12 @@ public class TaskPlanner {
         this.fallbackHandler = tempFallback;
         this.asyncOllamaClient = tempAsyncOllama;
         this.asyncLongCatClient = tempAsyncLongCat;
-        this.asyncIFlowClient = tempAsyncIFlow;
         this.asyncDeepSeekClient = tempAsyncDeepSeek;
         this.asyncOpenAIClient = tempAsyncOpenAI;
         this.asyncClaudeClient = tempAsyncClaude;
         this.asyncGeminiClient = tempAsyncGemini;
         this.asyncGroqClient = tempAsyncGroq;
+        this.asyncIFlowClient = tempAsyncIFlow;
     }
 
     public ResponseParser.ParsedResponse planTasks(SteveEntity steve, String command) {
@@ -186,12 +201,12 @@ public class TaskPlanner {
         String response = switch (provider) {
             case "ollama" -> ollamaClient.sendRequest(systemPrompt, userPrompt);
             case "longcat" -> longCatClient.sendRequest(systemPrompt, userPrompt);
-            case "iflow" -> iflowClient.sendRequest(systemPrompt, userPrompt);
             case "deepseek" -> deepSeekClient.sendRequest(systemPrompt, userPrompt);
             case "openai" -> openAIClient.sendRequest(systemPrompt, userPrompt);
             case "claude" -> claudeClient.sendRequest(systemPrompt, userPrompt);
             case "gemini" -> geminiClient.sendRequest(systemPrompt, userPrompt);
             case "groq" -> groqClient.sendRequest(systemPrompt, userPrompt);
+            case "iflow" -> iflowClient.sendRequest(systemPrompt, userPrompt); // Deprecated: shutting down April 17, 2026
             default -> {
                 SteveMod.LOGGER.warn("Unknown AI provider '{}', using LongCat", provider);
                 yield longCatClient.sendRequest(systemPrompt, userPrompt);
@@ -236,12 +251,12 @@ public class TaskPlanner {
             String modelForProvider = switch (provider) {
                 case "ollama" -> SteveConfig.OLLAMA_MODEL.get();
                 case "longcat" -> SteveConfig.LONGCAT_MODEL.get();
-                case "iflow" -> SteveConfig.IFLOW_MODEL.get();
                 case "deepseek" -> SteveConfig.DEEPSEEK_MODEL.get();
                 case "openai" -> SteveConfig.OPENAI_MODEL.get();
                 case "claude" -> SteveConfig.CLAUDE_MODEL.get();
                 case "gemini" -> SteveConfig.GEMINI_MODEL.get();
                 case "groq" -> SteveConfig.GROQ_MODEL.get();
+                case "iflow" -> SteveConfig.IFLOW_MODEL.get(); // Deprecated: shutting down April 17, 2026
                 default -> SteveConfig.LONGCAT_MODEL.get();
             };
             
@@ -322,12 +337,12 @@ public class TaskPlanner {
         AsyncLLMClient client = switch (provider) {
             case "ollama" -> asyncOllamaClient;
             case "longcat" -> asyncLongCatClient;
-            case "iflow" -> asyncIFlowClient;
             case "deepseek" -> asyncDeepSeekClient;
             case "openai" -> asyncOpenAIClient;
             case "claude" -> asyncClaudeClient;
             case "gemini" -> asyncGeminiClient;
             case "groq" -> asyncGroqClient;
+            case "iflow" -> asyncIFlowClient; // Deprecated: shutting down April 17, 2026
             default -> {
                 SteveMod.LOGGER.warn("[Async] Unknown provider '{}', trying LongCat as fallback", provider);
                 yield asyncLongCatClient;
@@ -337,15 +352,15 @@ public class TaskPlanner {
         // Null check - if preferred client is null, try fallback options
         if (client == null) {
             SteveMod.LOGGER.warn("[Async] Client for provider '{}' is null, trying fallbacks", provider);
-            // Try fallback order: longcat -> ollama -> iflow -> deepseek -> openai -> gemini -> groq
+            // Try fallback order: longcat -> ollama -> deepseek -> openai -> claude -> gemini -> groq -> iflow
             if (asyncLongCatClient != null) return asyncLongCatClient;
             if (asyncOllamaClient != null) return asyncOllamaClient;
-            if (asyncIFlowClient != null) return asyncIFlowClient;
             if (asyncDeepSeekClient != null) return asyncDeepSeekClient;
             if (asyncOpenAIClient != null) return asyncOpenAIClient;
             if (asyncClaudeClient != null) return asyncClaudeClient;
             if (asyncGeminiClient != null) return asyncGeminiClient;
             if (asyncGroqClient != null) return asyncGroqClient;
+            if (asyncIFlowClient != null) return asyncIFlowClient; // Deprecated: shutting down April 17, 2026
         }
         return client;
     }
