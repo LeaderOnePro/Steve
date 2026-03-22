@@ -14,10 +14,6 @@ public class SteveConfig {
     public static final ForgeConfigSpec.ConfigValue<String> LONGCAT_API_KEY;
     public static final ForgeConfigSpec.ConfigValue<String> LONGCAT_MODEL;
 
-    // iFlow
-    public static final ForgeConfigSpec.ConfigValue<String> IFLOW_API_KEY;
-    public static final ForgeConfigSpec.ConfigValue<String> IFLOW_MODEL;
-
     // DeepSeek
     public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_API_KEY;
     public static final ForgeConfigSpec.ConfigValue<String> DEEPSEEK_MODEL;
@@ -41,6 +37,10 @@ public class SteveConfig {
     // Ollama (Local)
     public static final ForgeConfigSpec.ConfigValue<String> OLLAMA_HOST;
     public static final ForgeConfigSpec.ConfigValue<String> OLLAMA_MODEL;
+
+    // iFlow (Deprecated: service will be shut down on April 17, 2026 Beijing Time)
+    public static final ForgeConfigSpec.ConfigValue<String> IFLOW_API_KEY;
+    public static final ForgeConfigSpec.ConfigValue<String> IFLOW_MODEL;
     
     // Behavior
     public static final ForgeConfigSpec.IntValue ACTION_TICK_DELAY;
@@ -53,7 +53,7 @@ public class SteveConfig {
         builder.comment("AI API Configuration").push("ai");
         
         AI_PROVIDER = builder
-            .comment("AI provider to use: 'ollama', 'longcat', 'iflow', 'deepseek', 'openai', 'claude', 'gemini', or 'groq' (FASTEST, FREE)")
+            .comment("AI provider to use: 'ollama', 'longcat', 'deepseek', 'openai', 'claude', 'gemini', 'groq' (FASTEST, FREE), or 'iflow' (shutting down April 17, 2026)")
             .define("provider", "longcat");
         
         MAX_TOKENS = builder
@@ -75,19 +75,6 @@ public class SteveConfig {
         LONGCAT_MODEL = builder
             .comment("LongCat model to use (LongCat-Flash-Chat, LongCat-Flash-Thinking, LongCat-Flash-Omni-2603, LongCat-Flash-Lite)")
             .define("model", "LongCat-Flash-Thinking");
-        
-        builder.pop();
-
-
-        builder.comment("iFlow API Configuration").push("iflow");
-        
-        IFLOW_API_KEY = builder
-            .comment("Your iFlow API key (get from: https://platform.iflow.cn/profile?tab=apiKey)")
-            .define("apiKey", "");
-        
-        IFLOW_MODEL = builder
-            .comment("iFlow model to use (glm-4.6, kimi-k2, qwen3-coder-plus, qwen3-max, qwen3-vl-plus, deepseek-v3.2, tstars2.0, iflow-rome-30ba3b)")
-            .define("model", "glm-4.6");
         
         builder.pop();
 
@@ -160,6 +147,19 @@ public class SteveConfig {
         OLLAMA_MODEL = builder
             .comment("Ollama model to use (qwen3:4b, gpt-oss:latest, glm-4.7-flash)")
             .define("model", "qwen3:4b");
+        
+        builder.pop();
+
+        // WARNING: iFlow API will be officially shut down on April 17, 2026 (Beijing Time)
+        builder.comment("iFlow API Configuration (DEPRECATED: service shutting down April 17, 2026 Beijing Time)").push("iflow");
+        
+        IFLOW_API_KEY = builder
+            .comment("Your iFlow API key (get from: https://platform.iflow.cn/profile?tab=apiKey)")
+            .define("apiKey", "");
+        
+        IFLOW_MODEL = builder
+            .comment("iFlow model to use (glm-4.6, kimi-k2, qwen3-coder-plus, qwen3-max, qwen3-vl-plus, deepseek-v3.2, tstars2.0, iflow-rome-30ba3b)")
+            .define("model", "glm-4.6");
         
         builder.pop();
 

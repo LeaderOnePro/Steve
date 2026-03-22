@@ -18,7 +18,10 @@ import java.util.concurrent.CompletableFuture;
  * Asynchronous Client for iFlow API.
  * OpenAI-compatible format.
  * API Keys: https://platform.iflow.cn/profile?tab=apiKey
+ *
+ * @deprecated iFlow API will be officially shut down on April 17, 2026 (Beijing Time).
  */
+@Deprecated
 public class AsyncIFlowClient implements AsyncLLMClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AsyncIFlowClient.class);

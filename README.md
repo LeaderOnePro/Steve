@@ -27,7 +27,7 @@ The agents aren't following predefined scripts. They're operating off natural la
 **You need:**
 - Minecraft 1.20.1 with Forge
 - Java 17
-- An LLM API key (LongCat, iFlow, DeepSeek, OpenAI GPT-5, Gemini 3, or Groq)
+- An LLM API key (LongCat, DeepSeek, OpenAI GPT-5, Gemini 3, Groq, or iFlow)
 
 **Installation:**
 1. Download the JAR from releases
@@ -83,7 +83,7 @@ Each Steve runs an autonomous agent loop that processes natural language command
 ### Core Components
 
 **LLM Integration** (`com.steve.ai.llm`)
-- **Multi-Provider Support**: Pluggable clients for LongCat, iFlow, DeepSeek, OpenAI, Gemini, and Groq.
+- **Multi-Provider Support**: Pluggable clients for LongCat, DeepSeek, OpenAI, Gemini, Groq, and iFlow (shutting down April 17, 2026).
 - **Resilient Clients**: Async implementations with caching, retries, and circuit breaker patterns.
 - **TaskPlanner**: Orchestrates LLM calls with context (conversation history, world state, Steve capabilities)
 - **PromptBuilder**: Constructs prompts with available actions, examples, and formatting instructions
@@ -236,7 +236,7 @@ Edit `config/steve-common.toml`. Each provider now has its own section for bette
 
 ```toml
 [ai]
-provider = "longcat"  # Options: ollama, longcat, iflow, deepseek, openai, claude, gemini, groq
+provider = "longcat"  # Options: ollama, longcat, deepseek, openai, claude, gemini, groq, iflow (shutting down April 17, 2026)
 maxTokens = 8000
 temperature = 0.7
 
@@ -247,10 +247,6 @@ model = "qwen3:4b"
 [longcat]
 apiKey = "ak_..."
 model = "LongCat-Flash-Thinking"
-
-[iflow]
-apiKey = "sk-..."
-model = "glm-4.6"
 
 [deepseek]
 apiKey = "sk-..."
@@ -271,6 +267,11 @@ model = "gemini-3-flash-preview"
 [groq]
 apiKey = "gsk_..."
 model = "llama-3.1-8b-instant"
+
+# DEPRECATED: iFlow API will be shut down on April 17, 2026 (Beijing Time)
+[iflow]
+apiKey = "sk-..."
+model = "glm-4.6"
 ```
 
 **Performance Tips:**
