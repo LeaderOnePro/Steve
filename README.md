@@ -45,7 +45,7 @@ temperature = 0.7
 
 [longcat]
 apiKey = "ak_xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-model = "LongCat-Flash-Thinking-2601"
+model = "LongCat-Flash-Thinking"
 ```
 
 Then spawn a Steve with `/steve spawn Bob` and press K to start giving commands.
@@ -246,7 +246,7 @@ model = "qwen3:4b"
 
 [longcat]
 apiKey = "ak_..."
-model = "LongCat-Flash-Thinking-2601"
+model = "LongCat-Flash-Thinking"
 
 [iflow]
 apiKey = "sk-..."

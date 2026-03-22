@@ -15,8 +15,8 @@
     # Get your API key from: https://longcat.chat/platform/api_keys
     apiKey = "ak_xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     
-    # LongCat model to use (LongCat-Flash-Chat, LongCat-Flash-Thinking, LongCat-Flash-Thinking-2601, LongCat-Flash-Lite)
-    model = "LongCat-Flash-Thinking-2601"
+    # LongCat model to use (LongCat-Flash-Chat, LongCat-Flash-Thinking, LongCat-Flash-Omni-2603, LongCat-Flash-Lite)
+    model = "LongCat-Flash-Thinking"
     
 # iFlow API Configuration
 [iflow]
