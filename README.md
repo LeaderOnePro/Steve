@@ -27,7 +27,7 @@ The agents aren't following predefined scripts. They're operating off natural la
 **You need:**
 - Minecraft 1.20.1 with Forge
 - Java 17
-- An LLM API key (LongCat, DeepSeek, OpenAI GPT-5, Gemini 3, Groq, or iFlow)
+- An LLM API key (LongCat, DeepSeek, OpenAI GPT-5, Claude, Gemini 3, Groq, or iFlow) — or use Ollama locally (no API key needed)
 
 **Installation:**
 1. Download the JAR from releases

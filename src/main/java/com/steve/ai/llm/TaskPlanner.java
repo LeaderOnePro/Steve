@@ -23,6 +23,7 @@ public class TaskPlanner {
     private final GeminiClient geminiClient;
     private final GroqClient groqClient;
     /** @deprecated iFlow API will be shut down on April 17, 2026 (Beijing Time) */
+    @Deprecated
     private final IFlowClient iflowClient;
 
     // NEW: Async resilient clients
@@ -34,6 +35,7 @@ public class TaskPlanner {
     private final AsyncLLMClient asyncGeminiClient;
     private final AsyncLLMClient asyncGroqClient;
     /** @deprecated iFlow API will be shut down on April 17, 2026 (Beijing Time) */
+    @Deprecated
     private final AsyncLLMClient asyncIFlowClient;
     private final LLMCache llmCache;
     private final LLMFallbackHandler fallbackHandler;
@@ -119,14 +121,6 @@ public class TaskPlanner {
                 temperature
             );
 
-            // Deprecated: iFlow API will be shut down on April 17, 2026 (Beijing Time)
-            AsyncLLMClient baseIFlow = new AsyncIFlowClient(
-                SteveConfig.IFLOW_API_KEY.get(),
-                SteveConfig.IFLOW_MODEL.get(),
-                maxTokens,
-                temperature
-            );
-
             // Wrap with resilience patterns (caching, retries, circuit breaker)
             tempAsyncOllama = new ResilientLLMClient(baseOllama, tempCache, tempFallback);
             tempAsyncLongCat = new ResilientLLMClient(baseLongCat, tempCache, tempFallback);
@@ -135,7 +129,25 @@ public class TaskPlanner {
             tempAsyncClaude = new ResilientLLMClient(baseClaude, tempCache, tempFallback);
             tempAsyncGemini = new ResilientLLMClient(baseGemini, tempCache, tempFallback);
             tempAsyncGroq = new ResilientLLMClient(baseGroq, tempCache, tempFallback);
-            tempAsyncIFlow = new ResilientLLMClient(baseIFlow, tempCache, tempFallback);
+
+            // Deprecated: iFlow API will be shut down on April 17, 2026 (Beijing Time)
+            // Isolated initialization to prevent iFlow misconfiguration from disabling all async clients
+            try {
+                String iflowKey = SteveConfig.IFLOW_API_KEY.get();
+                if (iflowKey != null && !iflowKey.isEmpty()) {
+                    AsyncLLMClient baseIFlow = new AsyncIFlowClient(
+                        iflowKey,
+                        SteveConfig.IFLOW_MODEL.get(),
+                        maxTokens,
+                        temperature
+                    );
+                    tempAsyncIFlow = new ResilientLLMClient(baseIFlow, tempCache, tempFallback);
+                } else {
+                    SteveMod.LOGGER.debug("iFlow API key not configured, skipping iFlow async client initialization");
+                }
+            } catch (Exception e) {
+                SteveMod.LOGGER.warn("Failed to initialize iFlow async client (deprecated provider): {}", e.getMessage());
+            }
 
             SteveMod.LOGGER.info("TaskPlanner initialized with async resilient clients");
         } catch (NoClassDefFoundError | Exception e) {
