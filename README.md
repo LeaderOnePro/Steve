@@ -1,4 +1,4 @@
-# Steve AI - Autonomous AI Agent for Minecraft (v1.0.6)
+# Steve AI - Autonomous AI Agent for Minecraft (v1.0.7)
 
 **Author:** LeaderOnePro  
 **Forked from:** [YuvDwi/Steve](https://github.com/YuvDwi/Steve)
@@ -242,7 +242,7 @@ temperature = 0.7
 
 [ollama]
 host = "http://localhost:11434"
-model = "qwen3:4b"
+model = "qwen3.5:4b"
 
 [longcat]
 apiKey = "ak_..."
@@ -254,11 +254,11 @@ model = "deepseek-chat"
 
 [openai]
 apiKey = "sk-..."
-model = "gpt-5-mini-2025-08-07"
+model = "gpt-5.4-mini"
 
 [claude]
 apiKey = "sk-ant-..."
-model = "claude-opus-4-5"
+model = "claude-opus-4-6"
 
 [gemini]
 apiKey = "AIza..."

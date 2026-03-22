@@ -97,8 +97,8 @@ public class SteveConfig {
             .define("apiKey", "");
         
         OPENAI_MODEL = builder
-            .comment("OpenAI model to use (gpt-5.2, gpt-5.2-codex, gpt-5-mini-2025-08-07, gpt-5-nano-2025-08-07)")
-            .define("model", "gpt-5-mini-2025-08-07");
+            .comment("OpenAI model to use (gpt-5.4, gpt-5.4-mini, gpt-5.4-nano)")
+            .define("model", "gpt-5.4-mini");
         
         builder.pop();
 
@@ -109,8 +109,8 @@ public class SteveConfig {
             .define("apiKey", "");
         
         CLAUDE_MODEL = builder
-            .comment("Claude model to use (claude-opus-4-5, claude-sonnet-4-5, claude-haiku-4-5)")
-            .define("model", "claude-opus-4-5");
+            .comment("Claude model to use (claude-opus-4-6, claude-sonnet-4-6, claude-haiku-4-5)")
+            .define("model", "claude-opus-4-6");
         
         builder.pop();
 
@@ -121,7 +121,7 @@ public class SteveConfig {
             .define("apiKey", "");
         
         GEMINI_MODEL = builder
-            .comment("Gemini model to use (gemini-3-pro-preview, gemini-3-flash-preview, gemini-flash-lite-latest)")
+            .comment("Gemini model to use (gemini-3.1-pro-preview, gemini-3-flash-preview, gemini-3.1-flash-lite-preview)")
             .define("model", "gemini-3-flash-preview");
         
         builder.pop();
@@ -145,8 +145,8 @@ public class SteveConfig {
             .define("host", "http://localhost:11434");
         
         OLLAMA_MODEL = builder
-            .comment("Ollama model to use (qwen3:4b, gpt-oss:latest, glm-4.7-flash)")
-            .define("model", "qwen3:4b");
+            .comment("Ollama model to use (qwen3.5:4b, qwen3.5:latest, glm-4.7-flash, qwen3.5:35b)")
+            .define("model", "qwen3.5:4b");
         
         builder.pop();
 
