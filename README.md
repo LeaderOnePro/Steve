@@ -95,7 +95,7 @@ Each Steve runs an autonomous agent loop that processes natural language command
 - **Task**: Data model for action parameters and metadata
 - **Available Actions**:
   - MineBlockAction: Intelligent ore/block mining with pathfinding
-  - BuildStructureAction: Procedural and template-based building
+  - BuildStructureAction: Procedural building
   - PlaceBlockAction: Single block placement with validation
   - MoveToAction: Pathfinding-based movement
   - AttackAction: Combat with target selection
@@ -104,7 +104,7 @@ Each Steve runs an autonomous agent loop that processes natural language command
 
 **Structure Generation** (`com.steve.ai.structure`)
 - **StructureGenerators**: Procedural generation algorithms (houses, castles, towers, barns)
-- **StructureTemplateLoader**: NBT file loading from resources
+- **StructureLoader**: NBT file loading from resources
 - **BlockPlacement**: Shared data structure for block positioning
 
 **Multi-Agent Collaboration** (`com.steve.ai.action`)
